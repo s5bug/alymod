@@ -1,0 +1,12 @@
+{
+  "block.prismatic_ice.glow": {
+    "subtitle": "subtitles.alymod.block.prismatic_ice.glow",
+    "sounds": [
+      {
+        "name": "minecraft:block/amethyst/shimmer",
+        "attenuation_distance": 48,
+        "pitch": 0.4
+      }
+    ]
+  }
+}

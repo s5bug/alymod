@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "alymod:block/prismatic_fluid"
+    }
+  }
+}

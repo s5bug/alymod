@@ -1,0 +1,21 @@
+{
+  "advancements.alymod.root.title": "Alymod",
+  "advancements.alymod.root.description": "Encounter Prismatic Ice",
+  "advancements.alymod.light_side_of_the_moon.title": "Light Side of the Moon",
+  "advancements.alymod.light_side_of_the_moon.description": "Throw an Amethyst Shard into Prismatic Fluid",
+  "advancements.alymod.boltsmithing.title": "Boltsmithing",
+  "advancements.alymod.boltsmithing.description": "Find a Bolt Fabrication Smithing Template",
+  "advancements.alymod.superbark.title": "Superbark",
+  "advancements.alymod.superbark.description": "Craft a basic Amethyst Bolt",
+  "block.alymod.prismatic_ice": "Prismatic Ice",
+  "item.alymod.amethyst_bolt": "Amethyst Bolt",
+  "item.alymod.bolt_smithing_template.title": "Bolt Fabrication",
+  "item.alymod.bolt_smithing_template.not_consumed": "This item is not consumed upon smithing",
+  "item.alymod.bolt_smithing_template.applies_to": "Blaze Rod",
+  "item.alymod.bolt_smithing_template.ingredients": "Crystal Shards",
+  "item.alymod.bolt_smithing_template.base_slot_description": "Add Blaze Rod",
+  "item.alymod.bolt_smithing_template.additions_slot_description": "Add crystal shard",
+  "item.alymod.prismatic_fluid_bucket": "Bucket of Prismatic Fluid",
+  "item.alymod.prismatic_shard": "Prismatic Shard",
+  "subtitles.alymod.block.prismatic_ice.glow": "Prismatic Ice glows"
+}

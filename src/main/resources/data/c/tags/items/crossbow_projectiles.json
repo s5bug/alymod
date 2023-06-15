@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:arrows",
+    "minecraft:firework_rocket",
+    "alymod:amethyst_bolt"
+  ]
+}

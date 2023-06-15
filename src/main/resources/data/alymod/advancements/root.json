@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": { "item": "alymod:prismatic_ice" },
+    "title": { "translate": "advancements.alymod.root.title" },
+    "description": { "translate": "advancements.alymod.root.description" },
+    "background": "alymod:textures/gui/advancements/backgrounds/root.png",
+    "show_toast": true,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "hear_prismatic_ice": {
+      "trigger": "alymod:hear_prismatic_ice"
+    },
+    "interact_prismatic_ice_merchant": {
+      "trigger": "alymod:interact_prismatic_ice_merchant"
+    },
+    "collected_prismatic_ice": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          { "items": [ "alymod:prismatic_ice" ] }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    ["hear_prismatic_ice", "interact_prismatic_ice_merchant", "collected_prismatic_ice"]
+  ]
+}

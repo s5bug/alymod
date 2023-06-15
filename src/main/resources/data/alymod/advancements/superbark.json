@@ -1,0 +1,21 @@
+{
+  "display": {
+    "icon": { "item": "alymod:amethyst_bolt" },
+    "title": { "translate": "advancements.alymod.superbark.title" },
+    "description": { "translate": "advancements.alymod.superbark.description" },
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "collected_amethyst_bolt": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          { "items": [ "alymod:amethyst_bolt" ] }
+        ]
+      }
+    }
+  },
+  "parent": "alymod:boltsmithing"
+}

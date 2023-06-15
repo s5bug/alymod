@@ -1,0 +1,20 @@
+{
+  "display": {
+    "icon": { "item": "alymod:bolt_smithing_template" },
+    "title": { "translate": "advancements.alymod.boltsmithing.title" },
+    "description": { "translate": "advancements.alymod.boltsmithing.description" },
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "collected_bolt_smithing_template": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          { "items": [ "alymod:bolt_smithing_template" ] }
+        ]
+      }
+    }
+  },
+  "parent": "alymod:root"
+}

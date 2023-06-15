@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:smithing_transform",
+  "base": {
+    "item": "minecraft:blaze_rod"
+  },
+  "addition": {
+    "item": "minecraft:amethyst_shard"
+  },
+  "template": {
+    "item": "alymod:bolt_smithing_template"
+  },
+  "result": {
+    "item": "alymod:amethyst_bolt"
+  }
+}

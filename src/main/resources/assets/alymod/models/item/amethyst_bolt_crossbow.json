@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/crossbow",
+  "textures": {
+    "layer0": "alymod:item/amethyst_bolt_crossbow"
+  }
+}

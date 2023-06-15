@@ -1,0 +1,20 @@
+{
+  "display": {
+    "icon": { "item": "alymod:prismatic_shard" },
+    "title": { "translate": "advancements.alymod.light_side_of_the_moon.title" },
+    "description": { "translate": "advancements.alymod.light_side_of_the_moon.description" },
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "collected_prismatic_shard": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          { "items": [ "alymod:prismatic_shard" ] }
+        ]
+      }
+    }
+  },
+  "parent": "alymod:root"
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "alymod",
+  "version": "${version}",
+  "name": "alymod",
+  "description": "",
+  "authors": [],
+  "contact": {
+    "repo": "https://github.com/s5bug/alymod"
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/alymod/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "tf.bug.alymod.client.AlymodClient"
+    ],
+    "main": [
+      "tf.bug.alymod.Alymod"
+    ]
+  },
+  "mixins": [
+    "alymod.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
