@@ -69,7 +69,7 @@ public class PrismaticIce extends Block {
                 return;
             }
 
-            world.setBlockState(pos, PrismaticFluid.BLOCK.getDefaultState());
+            world.setBlockState(pos, PrismaticFluidBlock.INSTANCE.getDefaultState());
         }
     }
 

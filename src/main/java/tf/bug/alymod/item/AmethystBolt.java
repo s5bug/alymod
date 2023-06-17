@@ -89,7 +89,11 @@ public class AmethystBolt extends Item {
 
     public static void registerClient() {
         ModelPredicateProviderRegistry.register(Items.CROSSBOW, AmethystBolt.ID, (stack, world, entity, seed) -> {
-            return CrossbowItem.isCharged(stack) && CrossbowItem.hasProjectile(stack, AmethystBolt.INSTANCE) ? 1.0F : 0.0F;
+            if (CrossbowItem.isCharged(stack) && CrossbowItem.hasProjectile(stack, AmethystBolt.INSTANCE)) {
+                return 1.0F;
+            } else {
+                return 0.0F;
+            }
         });
 
 

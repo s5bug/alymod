@@ -2,32 +2,28 @@ package tf.bug.alymod.block;
 
 import java.time.Instant;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
+import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRenderHandler;
+import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Lazy;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.*;
 import org.jetbrains.annotations.Nullable;
@@ -47,17 +43,6 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
 
     public static final PrismaticFluid.Flowing FLOWING_FLUID =
             new PrismaticFluid.Flowing();
-
-    public static final AbstractBlock.Settings BLOCK_SETTINGS =
-            FabricBlockSettings.create()
-                    .replaceable()
-                    .noCollision()
-                    .strength(100.0F)
-                    .dropsNothing()
-                    .liquid();
-
-    public static final Block BLOCK =
-            new FluidBlock(PrismaticFluid.STILL_FLUID, BLOCK_SETTINGS);
 
     public static final TagKey<Fluid> TAG =
             TagKey.of(RegistryKeys.FLUID, PrismaticFluid.ID);
@@ -109,7 +94,7 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
 
     @Override
     protected boolean canBeReplacedWith(FluidState state, BlockView world, BlockPos pos, Fluid fluid, Direction direction) {
-        return false;
+        return direction == Direction.DOWN && !fluid.isIn(PrismaticFluid.TAG);
     }
 
     @Override
@@ -124,7 +109,7 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
 
     @Override
     protected BlockState toBlockState(FluidState state) {
-        return PrismaticFluid.BLOCK.getDefaultState().with(FluidBlock.LEVEL, getBlockStateLevel(state));
+        return PrismaticFluidBlock.INSTANCE.getDefaultState().with(FluidBlock.LEVEL, getBlockStateLevel(state));
     }
 
     public final static class Still extends PrismaticFluid {
@@ -163,26 +148,58 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
     public static void register() {
         Registry.register(Registries.FLUID, PrismaticFluid.ID, PrismaticFluid.STILL_FLUID);
         Registry.register(Registries.FLUID, PrismaticFluid.FLOWING_ID, PrismaticFluid.FLOWING_FLUID);
-        Registry.register(Registries.BLOCK, PrismaticFluid.ID, PrismaticFluid.BLOCK);
     }
 
     public static void registerClient() {
-        FluidRenderHandlerRegistry.INSTANCE.register(PrismaticFluid.STILL_FLUID, PrismaticFluid.FLOWING_FLUID, new PrismaticFluid.Renderer());
+        PrismaticFluid.Renderer renderer = new PrismaticFluid.Renderer();
+        FluidRenderHandlerRegistry.INSTANCE.register(PrismaticFluid.STILL_FLUID, PrismaticFluid.FLOWING_FLUID, renderer);
         BlockRenderLayerMap.INSTANCE.putFluids(RenderLayer.getTranslucent(), PrismaticFluid.STILL_FLUID, PrismaticFluid.FLOWING_FLUID);
+        FluidVariantRendering.register(PrismaticFluid.STILL_FLUID, renderer);
     }
 
-    public static final class Renderer extends SimpleFluidRenderHandler {
+    public static final class Renderer extends SimpleFluidRenderHandler implements FluidVariantRenderHandler {
         public static final Identifier STILL =
                 Identifier.of(Alymod.ID, "block/prismatic_fluid_still");
 
         public static final Identifier FLOWING =
                 Identifier.of(Alymod.ID, "block/prismatic_fluid_flowing");
 
-        public static final Identifier OVERLAY =
-                Identifier.of(Alymod.ID, "block/prismatic_fluid_overlay");
+        public static final Identifier BACKGROUND =
+                Identifier.of(Alymod.ID, "block/prismatic_fluid_background");
+
+        public static final Identifier STAR =
+                Identifier.of(Alymod.ID, "block/prismatic_fluid_star");
+
+        private Sprite background;
+
+        private Sprite star;
 
         public Renderer() {
-            super(PrismaticFluid.Renderer.STILL, PrismaticFluid.Renderer.FLOWING, PrismaticFluid.Renderer.OVERLAY);
+            super(PrismaticFluid.Renderer.STILL, PrismaticFluid.Renderer.FLOWING);
+            this.background = null;
+            this.star = null;
+        }
+
+        @Override
+        public void renderFluid(BlockPos pos, BlockRenderView world, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState) {
+            // We do our rendering in PrismaticFluidBlockEntity
+            return;
+        }
+
+        @Override
+        public void reloadTextures(SpriteAtlasTexture textureAtlas) {
+            super.reloadTextures(textureAtlas);
+
+            this.background = textureAtlas.getSprite(PrismaticFluid.Renderer.BACKGROUND);
+            this.star = textureAtlas.getSprite(PrismaticFluid.Renderer.STAR);
+        }
+
+        public Sprite getBackground() {
+            return this.background;
+        }
+
+        public Sprite getStar() {
+            return this.star;
         }
 
         private static double reverseLight(double l) {
@@ -217,8 +234,8 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
 
             Instant now = Instant.now();
             long nowMs = now.toEpochMilli();
-            // TODO figure out why the tint is being cached in the renderer
-            // int nowP = 0;
+            // We can use time here for block-entities like tanks
+            // This _should_ never get called during baking
             int nowP = (int) (nowMs & timeMask);
 
             int posAffect = 0;
@@ -244,7 +261,22 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
             int gg = (int) (reverseGamma(Math.min(Math.max(-1.2681437731d * l + 2.6093323231d * m - 0.3411344290d * s, 0d), 1d)) * (256d - Math.ulp(256d)));
             int bb = (int) (reverseGamma(Math.min(Math.max(-0.0041119885d * l - 0.7034763098d * m + 1.7068625689d * s, 0d), 1d)) * (256d - Math.ulp(256d)));
 
-            return (rr << 16) | (gg << 8) | (bb << 0);
+            // This fake alpha is used in tanks etc.
+            // 252 is the alpha value default in prismatic_fluid_background
+            // TODO Ideally we pull this from the Sprite itself somehow
+            int aa = 252;
+
+            return (aa << 24) | (rr << 16) | (gg << 8) | (bb << 0);
+        }
+
+        @Override
+        public int getColor(FluidVariant fluidVariant, @Nullable BlockRenderView view, @Nullable BlockPos pos) {
+            return this.getFluidColor(view, pos, fluidVariant.getFluid().getDefaultState());
+        }
+
+        @Override
+        public @Nullable Sprite[] getSprites(FluidVariant fluidVariant) {
+            return this.getFluidSprites(null, null, fluidVariant.getFluid().getDefaultState());
         }
     }
 
