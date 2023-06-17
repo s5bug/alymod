@@ -165,6 +165,12 @@ public class PrismaticFluidBlockEntity extends BlockEntity {
         }
 
         @Override
+        public int getRenderDistance() {
+            // Assume 32 (+ 1) chunk radius, at 16 blocks per chunk
+            return Math.max(BlockEntityRenderer.super.getRenderDistance(), 528);
+        }
+
+        @Override
         public void render(PrismaticFluidBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
             World world = entity.world;
             BlockPos pos = entity.pos;

@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.texture.Sprite;
@@ -224,26 +225,35 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
 
         @Override
         public int getFluidColor(@Nullable BlockRenderView view, @Nullable BlockPos pos, FluidState state) {
-            final long timeFactor = 24L;
-            final long timeMask = (1L << timeFactor) - 1;
-            final double timeDivisor = (double) (1L << timeFactor);
+            final long msFactor = 24L;
+            final long msMask = (1L << msFactor) - 1;
+            final double msDivisor = (double) (1L << msFactor);
 
             final int positionFactor = 8;
             final int positionMask = (1 << positionFactor) - 1;
             final double positionDivisor = (double) (1 << positionFactor);
 
-            Instant now = Instant.now();
-            long nowMs = now.toEpochMilli();
             // We can use time here for block-entities like tanks
             // This _should_ never get called during baking
-            int nowP = (int) (nowMs & timeMask);
+            int nowP;
+            if(view instanceof World world) {
+                long worldTicks = world.getTime();
+                float tickDelta = MinecraftClient.getInstance().getTickDelta();
+                // 50 mspt
+                long nowMs = (worldTicks * 50L) + (long) (tickDelta * 50.0F);
+                nowP = (int) (nowMs & msMask);
+            } else {
+                Instant now = Instant.now();
+                long nowMs = now.toEpochMilli();
+                nowP = (int) (nowMs & msMask);
+            }
 
             int posAffect = 0;
             if(pos != null) {
                 posAffect = (pos.getX() + pos.getY() + pos.getZ()) & positionMask;
             }
 
-            double h = ((nowP / timeDivisor) + (posAffect / positionDivisor)) % 1;
+            double h = ((nowP / msDivisor) + (posAffect / positionDivisor)) % 1;
 
             final double chroma = 0.11d;
             final double lightness = 70.0d / 100.0d;
