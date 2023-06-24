@@ -231,7 +231,7 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
 
         @Override
         public int getFluidColor(@Nullable BlockRenderView view, @Nullable BlockPos pos, FluidState state) {
-            final long msFactor = 16L;
+            final long msFactor = 24L;
             final long msMask = (1L << msFactor) - 1;
             final double msDivisor = (double) (1L << msFactor);
 
