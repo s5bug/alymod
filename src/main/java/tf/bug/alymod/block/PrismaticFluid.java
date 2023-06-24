@@ -184,6 +184,12 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
         @Override
         public void renderFluid(BlockPos pos, BlockRenderView world, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState) {
             // We do our rendering in PrismaticFluidBlockEntity
+            // However, if this gets called it's likely that the chunk mesh changed, and we need to make the BlockEntity
+            // recalculate the vertex data
+            if(pos != null && world != null) {
+                PrismaticFluidBlockEntity pfbe = (PrismaticFluidBlockEntity) world.getBlockEntity(pos);
+                pfbe.markRenderDirty();
+            }
             return;
         }
 
@@ -225,7 +231,7 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
 
         @Override
         public int getFluidColor(@Nullable BlockRenderView view, @Nullable BlockPos pos, FluidState state) {
-            final long msFactor = 24L;
+            final long msFactor = 16L;
             final long msMask = (1L << msFactor) - 1;
             final double msDivisor = (double) (1L << msFactor);
 

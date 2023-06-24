@@ -10,7 +10,6 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.block.FluidRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
@@ -39,19 +38,47 @@ public class PrismaticFluidBlockEntity extends BlockEntity {
             FabricBlockEntityTypeBuilder.create(PrismaticFluidBlockEntity::new, PrismaticFluidBlock.INSTANCE)
                     .build();
 
-    boolean hasRendered;
+    private boolean isRenderDirty;
+    private float cachedHeightNE;
+    private float cachedHeightNW;
+    private float cachedHeightSE;
+    private float cachedHeightSW;
+    private float cachedBrightnessUp;
+    private float cachedBrightnessDown;
+    private float cachedBrightnessNorth;
+    private float cachedBrightnessWest;
+    private boolean cachedRenderUp;
+    private boolean cachedCoveredUp;
+    private boolean cachedRenderDown;
+    private boolean cachedRenderNorth;
+    private boolean cachedCoveredNorth;
+    private boolean cachedRenderSouth;
+    private boolean cachedCoveredSouth;
+    private boolean cachedRenderWest;
+    private boolean cachedCoveredWest;
+    private boolean cachedRenderEast;
+    private boolean cachedCoveredEast;
+    private boolean cachedRender;
+    private int cachedWorldLightUp;
+    private int cachedWorldLightDown;
+    private boolean isRendered;
 
     private PrismaticFluidBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        this.hasRendered = false;
+        this.isRenderDirty = true;
+        this.isRendered = false;
     }
 
     public PrismaticFluidBlockEntity(BlockPos pos, BlockState state) {
         this(PrismaticFluidBlockEntity.TYPE, pos, state);
     }
 
-    public boolean isHasRendered() {
-        return hasRendered;
+    public void markRenderDirty() {
+        this.isRenderDirty = true;
+    }
+
+    public boolean isRendered() {
+        return this.isRendered;
     }
 
     public static void register() {
@@ -132,7 +159,7 @@ public class PrismaticFluidBlockEntity extends BlockEntity {
         private static boolean isOppositeSideRenderedPrismaticFluid(BlockRenderView world, BlockPos pos, Direction direction, FluidState neighborFluidState) {
             if(neighborFluidState.isIn(PrismaticFluid.TAG)) {
                  if(world.getBlockEntity(pos.offset(direction)) instanceof PrismaticFluidBlockEntity pfbe) {
-                     return pfbe.isHasRendered();
+                     return pfbe.isRendered();
                  } else {
                      return false;
                  }
@@ -174,32 +201,111 @@ public class PrismaticFluidBlockEntity extends BlockEntity {
         public void render(PrismaticFluidBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
             World world = entity.world;
             BlockPos pos = entity.pos;
-            entity.hasRendered = true;
-
             BlockState blockStateSelf = entity.getCachedState();
             FluidState fluidStateSelf = blockStateSelf.getFluidState();
 
-            BlockState blockStateDown = world.getBlockState(pos.offset(Direction.DOWN));
-            FluidState fluidStateDown = blockStateDown.getFluidState();
-            BlockState blockStateUp = world.getBlockState(pos.offset(Direction.UP));
-            FluidState fluidStateUp = blockStateUp.getFluidState();
-            BlockState blockStateNorth = world.getBlockState(pos.offset(Direction.NORTH));
-            FluidState fluidStateNorth = blockStateNorth.getFluidState();
-            BlockState blockStateSouth = world.getBlockState(pos.offset(Direction.SOUTH));
-            FluidState fluidStateSouth = blockStateSouth.getFluidState();
-            BlockState blockStateWest = world.getBlockState(pos.offset(Direction.WEST));
-            FluidState fluidStateWest = blockStateWest.getFluidState();
-            BlockState blockStateEast = world.getBlockState(pos.offset(Direction.EAST));
-            FluidState fluidStateEast = blockStateEast.getFluidState();
+            if(entity.isRenderDirty) {
+                entity.isRenderDirty = false;
 
-            boolean shouldRenderUp = !isOppositeSideRenderedPrismaticFluid(world, pos, Direction.UP, fluidStateUp);
-            boolean shouldRenderDown = shouldRenderSide(world, pos, blockStateSelf, Direction.DOWN, fluidStateDown);
-            boolean shouldRenderNorth = shouldRenderSide(world, pos, blockStateSelf, Direction.NORTH, fluidStateNorth);
-            boolean shouldRenderSouth = shouldRenderSide(world, pos, blockStateSelf, Direction.SOUTH, fluidStateSouth);
-            boolean shouldRenderWest = shouldRenderSide(world, pos, blockStateSelf, Direction.WEST, fluidStateWest);
-            boolean shouldRenderEast = shouldRenderSide(world, pos, blockStateSelf, Direction.EAST, fluidStateEast);
+                BlockState blockStateDown = world.getBlockState(pos.offset(Direction.DOWN));
+                FluidState fluidStateDown = blockStateDown.getFluidState();
+                BlockState blockStateUp = world.getBlockState(pos.offset(Direction.UP));
+                FluidState fluidStateUp = blockStateUp.getFluidState();
+                BlockState blockStateNorth = world.getBlockState(pos.offset(Direction.NORTH));
+                FluidState fluidStateNorth = blockStateNorth.getFluidState();
+                BlockState blockStateSouth = world.getBlockState(pos.offset(Direction.SOUTH));
+                FluidState fluidStateSouth = blockStateSouth.getFluidState();
+                BlockState blockStateWest = world.getBlockState(pos.offset(Direction.WEST));
+                FluidState fluidStateWest = blockStateWest.getFluidState();
+                BlockState blockStateEast = world.getBlockState(pos.offset(Direction.EAST));
+                FluidState fluidStateEast = blockStateEast.getFluidState();
 
-            if(shouldRenderUp || shouldRenderDown || shouldRenderNorth || shouldRenderSouth || shouldRenderWest || shouldRenderEast) {
+                if(!entity.isRendered) {
+                    entity.isRendered = true;
+                    if(world.getBlockEntity(pos.offset(Direction.DOWN)) instanceof PrismaticFluidBlockEntity pfbeDown) {
+                        pfbeDown.markRenderDirty();
+                    }
+                    if(world.getBlockEntity(pos.offset(Direction.UP)) instanceof PrismaticFluidBlockEntity pfbeUp) {
+                        pfbeUp.markRenderDirty();
+                    }
+                    if(world.getBlockEntity(pos.offset(Direction.NORTH)) instanceof PrismaticFluidBlockEntity pfbeNorth) {
+                        pfbeNorth.markRenderDirty();
+                    }
+                    if(world.getBlockEntity(pos.offset(Direction.SOUTH)) instanceof PrismaticFluidBlockEntity pfbeSouth) {
+                        pfbeSouth.markRenderDirty();
+                    }
+                    if(world.getBlockEntity(pos.offset(Direction.WEST)) instanceof PrismaticFluidBlockEntity pfbeWest) {
+                        pfbeWest.markRenderDirty();
+                    }
+                    if(world.getBlockEntity(pos.offset(Direction.EAST)) instanceof PrismaticFluidBlockEntity pfbeEast) {
+                        pfbeEast.markRenderDirty();
+                    }
+                }
+
+                entity.cachedRenderUp = !isOppositeSideRenderedPrismaticFluid(world, pos, Direction.UP, fluidStateUp);
+                entity.cachedRenderDown = shouldRenderSide(world, pos, blockStateSelf, Direction.DOWN, fluidStateDown);
+                entity.cachedRenderNorth = shouldRenderSide(world, pos, blockStateSelf, Direction.NORTH, fluidStateNorth);
+                entity.cachedRenderSouth = shouldRenderSide(world, pos, blockStateSelf, Direction.SOUTH, fluidStateSouth);
+                entity.cachedRenderWest = shouldRenderSide(world, pos, blockStateSelf, Direction.WEST, fluidStateWest);
+                entity.cachedRenderEast = shouldRenderSide(world, pos, blockStateSelf, Direction.EAST, fluidStateEast);
+
+                entity.cachedRender = entity.cachedRenderUp ||
+                        entity.cachedRenderDown ||
+                        entity.cachedRenderNorth ||
+                        entity.cachedRenderSouth ||
+                        entity.cachedRenderWest ||
+                        entity.cachedRenderEast;
+
+                if(entity.cachedRender) {
+                    entity.cachedBrightnessDown = world.getBrightness(Direction.DOWN, true);
+                    entity.cachedBrightnessUp = world.getBrightness(Direction.UP, true);
+                    entity.cachedBrightnessNorth = world.getBrightness(Direction.NORTH, true);
+                    entity.cachedBrightnessWest = world.getBrightness(Direction.WEST, true);
+
+                    Fluid fluidSelf = fluidStateSelf.getFluid();
+                    float heightSelf = getFluidHeight(world, fluidSelf, pos, blockStateSelf, fluidStateSelf);
+
+                    if (heightSelf >= 1.0F) {
+                        entity.cachedHeightNE = 1.0F;
+                        entity.cachedHeightNW = 1.0F;
+                        entity.cachedHeightSE = 1.0F;
+                        entity.cachedHeightSW = 1.0F;
+                    } else {
+                        float heightN = getFluidHeight(world, fluidSelf, pos.north(), blockStateNorth, fluidStateNorth);
+                        float heightS = getFluidHeight(world, fluidSelf, pos.south(), blockStateSouth, fluidStateSouth);
+                        float heightE = getFluidHeight(world, fluidSelf, pos.east(), blockStateEast, fluidStateEast);
+                        float heightV = getFluidHeight(world, fluidSelf, pos.west(), blockStateWest, fluidStateWest);
+                        entity.cachedHeightNE = calculateFluidHeight(world, fluidSelf, heightSelf, heightN, heightE, pos.offset(Direction.NORTH).offset(Direction.EAST));
+                        entity.cachedHeightNW = calculateFluidHeight(world, fluidSelf, heightSelf, heightN, heightV, pos.offset(Direction.NORTH).offset(Direction.WEST));
+                        entity.cachedHeightSE = calculateFluidHeight(world, fluidSelf, heightSelf, heightS, heightE, pos.offset(Direction.SOUTH).offset(Direction.EAST));
+                        entity.cachedHeightSW = calculateFluidHeight(world, fluidSelf, heightSelf, heightS, heightV, pos.offset(Direction.SOUTH).offset(Direction.WEST));
+                    }
+
+                    if(entity.cachedRenderUp) { // FIXME
+                        entity.cachedWorldLightUp = getLight(world, pos);
+                        entity.cachedCoveredUp = isSideCovered(world, pos, Direction.UP, Math.min(Math.min(entity.cachedHeightNW, entity.cachedHeightSW), Math.min(entity.cachedHeightSE, entity.cachedHeightNE)), blockStateUp);
+                    }
+
+                    if(entity.cachedRenderDown) {
+                        entity.cachedWorldLightDown = getLight(world, pos.down());
+                    }
+
+                    if(entity.cachedRenderNorth) {
+                        entity.cachedCoveredNorth = isSideCovered(world, pos, Direction.NORTH, Math.max(entity.cachedHeightNW, entity.cachedHeightNE), blockStateNorth);
+                    }
+                    if(entity.cachedRenderSouth) {
+                        entity.cachedCoveredSouth = isSideCovered(world, pos, Direction.SOUTH, Math.max(entity.cachedHeightSW, entity.cachedHeightSE), blockStateSouth);
+                    }
+                    if(entity.cachedRenderWest) {
+                        entity.cachedCoveredWest = isSideCovered(world, pos, Direction.WEST, Math.max(entity.cachedHeightNW, entity.cachedHeightSW), blockStateWest);
+                    }
+                    if(entity.cachedRenderEast) {
+                        entity.cachedCoveredEast = isSideCovered(world, pos, Direction.EAST, Math.max(entity.cachedHeightNE, entity.cachedHeightSE), blockStateEast);
+                    }
+                }
+            }
+
+            if(entity.cachedRender) {
                 matrices.push();
 
                 VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getTranslucent());
@@ -219,151 +325,117 @@ public class PrismaticFluidBlockEntity extends BlockEntity {
 
                 Matrix4f model = matrices.peek().getPositionMatrix();
 
-                float brightnessDown = world.getBrightness(Direction.DOWN, true);
-                float brightnessUp = world.getBrightness(Direction.UP, true);
-                float brightnessNorth = world.getBrightness(Direction.NORTH, true);
-                float brightnessWest = world.getBrightness(Direction.WEST, true);
-                Fluid fluidSelf = fluidStateSelf.getFluid();
-                float heightSelf = getFluidHeight(world, fluidSelf, pos, blockStateSelf, fluidStateSelf);
-                float heightNE;
-                float heightNW;
-                float heightSE;
-                float heightSW;
-                if (heightSelf >= 1.0F) {
-                    heightNE = 1.0F;
-                    heightNW = 1.0F;
-                    heightSE = 1.0F;
-                    heightSW = 1.0F;
-                } else {
-                    float heightN = getFluidHeight(world, fluidSelf, pos.north(), blockStateNorth, fluidStateNorth);
-                    float heightS = getFluidHeight(world, fluidSelf, pos.south(), blockStateSouth, fluidStateSouth);
-                    float heightE = getFluidHeight(world, fluidSelf, pos.east(), blockStateEast, fluidStateEast);
-                    float heightV = getFluidHeight(world, fluidSelf, pos.west(), blockStateWest, fluidStateWest);
-                    heightNE = calculateFluidHeight(world, fluidSelf, heightSelf, heightN, heightE, pos.offset(Direction.NORTH).offset(Direction.EAST));
-                    heightNW = calculateFluidHeight(world, fluidSelf, heightSelf, heightN, heightV, pos.offset(Direction.NORTH).offset(Direction.WEST));
-                    heightSE = calculateFluidHeight(world, fluidSelf, heightSelf, heightS, heightE, pos.offset(Direction.SOUTH).offset(Direction.EAST));
-                    heightSW = calculateFluidHeight(world, fluidSelf, heightSelf, heightS, heightV, pos.offset(Direction.SOUTH).offset(Direction.WEST));
-                }
-
                 float x = 0.001F;
-                float y = shouldRenderDown ? 0.001F : 0.0F;
+                float y = entity.cachedRenderDown ? 0.001F : 0.0F;
 
                 float whiteULeft = background.getFrameU(0.0);
                 float whiteURight = background.getFrameU(16.0);
                 float whiteVTop = background.getFrameV(0.0);
                 float whiteVBot = background.getFrameV(16.0);
 
-                if (shouldRenderUp && !isSideCovered(world, pos, Direction.UP, Math.min(Math.min(heightNW, heightSW), Math.min(heightSE, heightNE)), blockStateUp)) {
-                    heightNW -= 0.001F;
-                    heightSW -= 0.001F;
-                    heightSE -= 0.001F;
-                    heightNE -= 0.001F;
+                if (entity.cachedRenderUp && !entity.cachedCoveredUp) {
+                    float heightNW = entity.cachedHeightNW - 0.001F;
+                    float heightSW = entity.cachedHeightSW - 0.001F;
+                    float heightSE = entity.cachedHeightSE - 0.001F;
+                    float heightNE = entity.cachedHeightNE - 0.001F;
 
-                    int worldLight = getLight(world, pos);
-                    float r = baseR * brightnessUp;
-                    float g = baseG * brightnessUp;
-                    float b = baseB * brightnessUp;
-                    vertex(model, vertexConsumer, 0.0f, heightNW, 0.0f, r, g, b, baseA, whiteULeft, whiteVTop, worldLight);
-                    vertex(model, vertexConsumer, 0.0f, heightSW, 1.0f, r, g, b, baseA, whiteULeft, whiteVBot, worldLight);
-                    vertex(model, vertexConsumer, 1.0f, heightSE, 1.0f, r, g, b, baseA, whiteURight, whiteVBot, worldLight);
-                    vertex(model, vertexConsumer, 1.0f, heightNE, 0.0f, r, g, b, baseA, whiteURight, whiteVTop, worldLight);
+                    float r = baseR * entity.cachedBrightnessUp;
+                    float g = baseG * entity.cachedBrightnessUp;
+                    float b = baseB * entity.cachedBrightnessUp;
+
+                    vertex(model, vertexConsumer, 0.0f, heightNW, 0.0f, r, g, b, baseA, whiteULeft, whiteVTop, entity.cachedWorldLightUp);
+                    vertex(model, vertexConsumer, 0.0f, heightSW, 1.0f, r, g, b, baseA, whiteULeft, whiteVBot, entity.cachedWorldLightUp);
+                    vertex(model, vertexConsumer, 1.0f, heightSE, 1.0f, r, g, b, baseA, whiteURight, whiteVBot, entity.cachedWorldLightUp);
+                    vertex(model, vertexConsumer, 1.0f, heightNE, 0.0f, r, g, b, baseA, whiteURight, whiteVTop, entity.cachedWorldLightUp);
                     if (fluidStateSelf.canFlowTo(world, pos.up())) {
-                        vertex(model, vertexConsumer, 0.0f, heightNW, 0.0f, r, g, b, baseA, whiteULeft, whiteVTop, worldLight);
-                        vertex(model, vertexConsumer, 1.0f, heightNE, 0.0f, r, g, b, baseA, whiteULeft, whiteVBot, worldLight);
-                        vertex(model, vertexConsumer, 1.0f, heightSE, 1.0f, r, g, b, baseA, whiteURight, whiteVBot, worldLight);
-                        vertex(model, vertexConsumer, 0.0f, heightSW, 1.0f, r, g, b, baseA, whiteURight, whiteVTop, worldLight);
+                        // FIXME why does it draw twice
+                        vertex(model, vertexConsumer, 0.0f, heightNW, 0.0f, r, g, b, baseA, whiteULeft, whiteVTop, entity.cachedWorldLightUp);
+                        vertex(model, vertexConsumer, 1.0f, heightNE, 0.0f, r, g, b, baseA, whiteULeft, whiteVBot, entity.cachedWorldLightUp);
+                        vertex(model, vertexConsumer, 1.0f, heightSE, 1.0f, r, g, b, baseA, whiteURight, whiteVBot, entity.cachedWorldLightUp);
+                        vertex(model, vertexConsumer, 0.0f, heightSW, 1.0f, r, g, b, baseA, whiteURight, whiteVTop, entity.cachedWorldLightUp);
                     }
                 }
 
-                if (shouldRenderDown) {
-                    int worldLight = getLight(world, pos.down());
-                    float r = baseR * brightnessDown;
-                    float g = baseG * brightnessDown;
-                    float b = baseB * brightnessDown;
-                    vertex(model, vertexConsumer, 0.0f, y, 1.0f, r, g, b, baseA, whiteULeft, whiteVTop, worldLight);
-                    vertex(model, vertexConsumer, 0.0f, y, 0.0f, r, g, b, baseA, whiteULeft, whiteVBot, worldLight);
-                    vertex(model, vertexConsumer, 1.0f, y, 0.0f, r, g, b, baseA, whiteURight, whiteVBot, worldLight);
-                    vertex(model, vertexConsumer, 1.0f, y, 1.0f, r, g, b, baseA, whiteURight, whiteVTop, worldLight);
+                if (entity.cachedRenderDown) {
+                    float r = baseR * entity.cachedBrightnessDown;
+                    float g = baseG * entity.cachedBrightnessDown;
+                    float b = baseB * entity.cachedBrightnessDown;
+                    vertex(model, vertexConsumer, 0.0f, y, 1.0f, r, g, b, baseA, whiteULeft, whiteVTop, entity.cachedWorldLightDown);
+                    vertex(model, vertexConsumer, 0.0f, y, 0.0f, r, g, b, baseA, whiteULeft, whiteVBot, entity.cachedWorldLightDown);
+                    vertex(model, vertexConsumer, 1.0f, y, 0.0f, r, g, b, baseA, whiteURight, whiteVBot, entity.cachedWorldLightDown);
+                    vertex(model, vertexConsumer, 1.0f, y, 1.0f, r, g, b, baseA, whiteURight, whiteVTop, entity.cachedWorldLightDown);
                 }
 
-                int aq = getLight(world, pos);
-                Iterator<Direction> sides = Direction.Type.HORIZONTAL.iterator();
-
-                drawSides: while(true) {
-                    Direction direction;
+                for (Direction direction : Direction.Type.HORIZONTAL) {
                     float x1;
                     float x2;
+                    float z1;
+                    float z2;
                     float y1;
                     float y2;
-                    float height1;
-                    float height2;
+
                     boolean shouldRender;
-                    do {
-                        do {
-                            if (!sides.hasNext()) {
-                                break drawSides;
-                            }
+                    boolean isCovered;
 
-                            direction = sides.next();
-                            switch (direction) {
-                                case NORTH -> {
-                                    height1 = heightNW;
-                                    height2 = heightNE;
-                                    x1 = 0.0f;
-                                    x2 = 1.0f;
-                                    y1 = 0.001f;
-                                    y2 = 0.001f;
-                                    shouldRender = shouldRenderNorth;
-                                }
-                                case SOUTH -> {
-                                    height1 = heightSE;
-                                    height2 = heightSW;
-                                    x1 = 1.0f;
-                                    x2 = 0.0f;
-                                    y1 = 1.0f - 0.001f;
-                                    y2 = 1.0f - 0.001f;
-                                    shouldRender = shouldRenderSouth;
-                                }
-                                case WEST -> {
-                                    height1 = heightSW;
-                                    height2 = heightNW;
-                                    x1 = 0.001f;
-                                    x2 = 0.001f;
-                                    y1 = 1.0f;
-                                    y2 = 0.0f;
-                                    shouldRender = shouldRenderWest;
-                                }
-                                default -> {
-                                    height1 = heightNE;
-                                    height2 = heightSE;
-                                    x1 = 1.0f - 0.001f;
-                                    x2 = 1.0f - 0.001f;
-                                    y1 = 0.0f;
-                                    y2 = 1.0f;
-                                    shouldRender = shouldRenderEast;
-                                }
-                            }
-                        } while(!shouldRender);
-                    } while(isSideCovered(world, pos, direction, Math.max(height1, height2), world.getBlockState(pos.offset(direction))));
+                    switch (direction) {
+                        case NORTH -> {
+                            y1 = entity.cachedHeightNW;
+                            y2 = entity.cachedHeightNE;
+                            x1 = 0.0f;
+                            x2 = 1.0f;
+                            z1 = 0.001f;
+                            z2 = 0.001f;
+                            shouldRender = entity.cachedRenderNorth;
+                            isCovered = entity.cachedCoveredNorth;
+                        }
+                        case SOUTH -> {
+                            y1 = entity.cachedHeightSE;
+                            y2 = entity.cachedHeightSW;
+                            x1 = 1.0f;
+                            x2 = 0.0f;
+                            z1 = 1.0f - 0.001f;
+                            z2 = 1.0f - 0.001f;
+                            shouldRender = entity.cachedRenderSouth;
+                            isCovered = entity.cachedCoveredSouth;
+                        }
+                        case WEST -> {
+                            y1 = entity.cachedHeightSW;
+                            y2 = entity.cachedHeightNW;
+                            x1 = 0.001f;
+                            x2 = 0.001f;
+                            z1 = 1.0f;
+                            z2 = 0.0f;
+                            shouldRender = entity.cachedRenderWest;
+                            isCovered = entity.cachedCoveredWest;
+                        }
+                        default -> {
+                            y1 = entity.cachedHeightNE;
+                            y2 = entity.cachedHeightSE;
+                            x1 = 1.0f - 0.001f;
+                            x2 = 1.0f - 0.001f;
+                            z1 = 0.0f;
+                            z2 = 1.0f;
+                            shouldRender = entity.cachedRenderEast;
+                            isCovered = entity.cachedCoveredEast;
+                        }
+                    }
 
-                    BlockPos blockPos = pos.offset(direction);
-                    Block block = world.getBlockState(blockPos).getBlock();
-                    boolean drawOverlay = block instanceof TransparentBlock || block instanceof LeavesBlock;
+                    if (!shouldRender || isCovered) continue;
 
-                    float brightness = direction.getAxis() == Direction.Axis.Z ? brightnessNorth : brightnessWest;
-                    float r = baseR * brightnessUp * brightness;
-                    float g = baseG * brightnessUp * brightness;
-                    float b = baseB * brightnessUp * brightness;
+                    float brightness = direction.getAxis() == Direction.Axis.Z ? entity.cachedBrightnessNorth : entity.cachedBrightnessWest;
+                    float r = baseR * entity.cachedBrightnessUp * brightness;
+                    float g = baseG * entity.cachedBrightnessUp * brightness;
+                    float b = baseB * entity.cachedBrightnessUp * brightness;
                     // TODO what is this?
-                    vertex(model, vertexConsumer, x1, height1, y1, r, g, b, baseA, whiteULeft, whiteVTop, aq);
-                    vertex(model, vertexConsumer, x2, height2, y2, r, g, b, baseA, whiteURight, whiteVTop, aq);
-                    vertex(model, vertexConsumer, x2, y, y2, r, g, b, baseA, whiteURight, whiteVBot, aq);
-                    vertex(model, vertexConsumer, x1, y, y1, r, g, b, baseA, whiteULeft, whiteVBot, aq);
-                    if (!drawOverlay) {
-                        vertex(model, vertexConsumer, x1, y, y1, r, g, b, baseA, whiteULeft, whiteVTop, aq);
-                        vertex(model, vertexConsumer, x2, y, y2, r, g, b, baseA, whiteURight, whiteVTop, aq);
-                        vertex(model, vertexConsumer, x2, height2, y2, r, g, b, baseA, whiteURight, whiteVBot, aq);
-                        vertex(model, vertexConsumer, x1, height1, y1, r, g, b, baseA, whiteULeft, whiteVBot, aq);
+                    vertex(model, vertexConsumer, x1, y1, z1, r, g, b, baseA, whiteULeft, whiteVTop, entity.cachedWorldLightUp);
+                    vertex(model, vertexConsumer, x2, y2, z2, r, g, b, baseA, whiteURight, whiteVTop, entity.cachedWorldLightUp);
+                    vertex(model, vertexConsumer, x2, y, z2, r, g, b, baseA, whiteURight, whiteVBot, entity.cachedWorldLightUp);
+                    vertex(model, vertexConsumer, x1, y, z1, r, g, b, baseA, whiteULeft, whiteVBot, entity.cachedWorldLightUp);
+                    if (true) { // if(!drawOverlay)
+                        vertex(model, vertexConsumer, x1, y, z1, r, g, b, baseA, whiteULeft, whiteVTop, entity.cachedWorldLightUp);
+                        vertex(model, vertexConsumer, x2, y, z2, r, g, b, baseA, whiteURight, whiteVTop, entity.cachedWorldLightUp);
+                        vertex(model, vertexConsumer, x2, y2, z2, r, g, b, baseA, whiteURight, whiteVBot, entity.cachedWorldLightUp);
+                        vertex(model, vertexConsumer, x1, y1, z1, r, g, b, baseA, whiteULeft, whiteVBot, entity.cachedWorldLightUp);
                     }
                 }
 
