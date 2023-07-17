@@ -8,6 +8,8 @@
   "advancements.alymod.superbark.title": "Superbark",
   "advancements.alymod.superbark.description": "Craft a basic Amethyst Bolt",
   "block.alymod.prismatic_ice": "Prismatic Ice",
+  "death.attack.burstIntoLight": "%s burst into light",
+  "effect.alymod.chromatic_aberration": "Aberration",
   "item.alymod.amethyst_bolt": "Amethyst Bolt",
   "item.alymod.bolt_smithing_template.title": "Bolt Fabrication",
   "item.alymod.bolt_smithing_template.not_consumed": "This item is not consumed upon smithing",

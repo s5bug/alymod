@@ -6,6 +6,7 @@ import tf.bug.alymod.advancement.InteractPrismaticIceMerchantCriterion;
 import tf.bug.alymod.block.PrismaticFluid;
 import tf.bug.alymod.block.PrismaticFluidBlock;
 import tf.bug.alymod.block.PrismaticIce;
+import tf.bug.alymod.effect.ChromaticAberrationStatusEffect;
 import tf.bug.alymod.entity.AmethystBoltEntity;
 import tf.bug.alymod.item.AmethystBolt;
 import tf.bug.alymod.item.BoltSmithingTemplate;
@@ -20,6 +21,8 @@ public class Alymod implements ModInitializer {
     public void onInitialize() {
         HearPrismaticIceCriterion.register();
         InteractPrismaticIceMerchantCriterion.register();
+
+        ChromaticAberrationStatusEffect.register();
 
         AmethystBolt.register();
         BoltSmithingTemplate.register();
