@@ -165,48 +165,11 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
         public static final Identifier FLOWING =
                 Identifier.of(Alymod.ID, "block/prismatic_fluid_flowing");
 
-        public static final Identifier BACKGROUND =
-                Identifier.of(Alymod.ID, "block/prismatic_fluid_background");
-
-        public static final Identifier STAR =
-                Identifier.of(Alymod.ID, "block/prismatic_fluid_star");
-
-        private Sprite background;
-
-        private Sprite star;
+        public static final Identifier OVERLAY =
+                Identifier.of(Alymod.ID, "block/prismatic_fluid_overlay");
 
         public Renderer() {
-            super(PrismaticFluid.Renderer.STILL, PrismaticFluid.Renderer.FLOWING);
-            this.background = null;
-            this.star = null;
-        }
-
-        @Override
-        public void renderFluid(BlockPos pos, BlockRenderView world, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState) {
-            // We do our rendering in PrismaticFluidBlockEntity
-            // However, if this gets called it's likely that the chunk mesh changed, and we need to make the BlockEntity
-            // recalculate the vertex data
-            if(pos != null && world != null) {
-                PrismaticFluidBlockEntity pfbe = (PrismaticFluidBlockEntity) world.getBlockEntity(pos);
-                pfbe.markRenderDirty();
-            }
-            return;
-        }
-
-        @Override
-        public void reloadTextures(SpriteAtlasTexture textureAtlas) {
-            super.reloadTextures(textureAtlas);
-
-            this.background = textureAtlas.getSprite(PrismaticFluid.Renderer.BACKGROUND);
-            this.star = textureAtlas.getSprite(PrismaticFluid.Renderer.STAR);
-        }
-
-        public Sprite getBackground() {
-            return this.background;
-        }
-
-        public Sprite getStar() {
-            return this.star;
+            super(PrismaticFluid.Renderer.STILL, PrismaticFluid.Renderer.FLOWING, PrismaticFluid.Renderer.OVERLAY);
         }
 
         private static double reverseLight(double l) {
@@ -231,35 +194,16 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
 
         @Override
         public int getFluidColor(@Nullable BlockRenderView view, @Nullable BlockPos pos, FluidState state) {
-            final long msFactor = 24L;
-            final long msMask = (1L << msFactor) - 1;
-            final double msDivisor = (double) (1L << msFactor);
+            // Leave uncolored if we don't have a position
+            if(pos == null) return -1;
 
             final int positionFactor = 8;
             final int positionMask = (1 << positionFactor) - 1;
-            final double positionDivisor = (double) (1 << positionFactor);
+            final double positionDivisor = (1 << positionFactor);
 
-            // We can use time here for block-entities like tanks
-            // This _should_ never get called during baking
-            int nowP;
-            if(view instanceof World world) {
-                long worldTicks = world.getTime();
-                float tickDelta = MinecraftClient.getInstance().getTickDelta();
-                // 50 mspt
-                long nowMs = (worldTicks * 50L) + (long) (tickDelta * 50.0F);
-                nowP = (int) (nowMs & msMask);
-            } else {
-                Instant now = Instant.now();
-                long nowMs = now.toEpochMilli();
-                nowP = (int) (nowMs & msMask);
-            }
+            int posAffect = (pos.getX() + pos.getY() + pos.getZ()) & positionMask;
 
-            int posAffect = 0;
-            if(pos != null) {
-                posAffect = (pos.getX() + pos.getY() + pos.getZ()) & positionMask;
-            }
-
-            double h = ((nowP / msDivisor) + (posAffect / positionDivisor)) % 1;
+            double h = (posAffect / positionDivisor) % 1;
 
             final double chroma = 0.11d;
             final double lightness = 70.0d / 100.0d;
@@ -277,23 +221,9 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
             int gg = (int) (reverseGamma(Math.min(Math.max(-1.2681437731d * l + 2.6093323231d * m - 0.3411344290d * s, 0d), 1d)) * (256d - Math.ulp(256d)));
             int bb = (int) (reverseGamma(Math.min(Math.max(-0.0041119885d * l - 0.7034763098d * m + 1.7068625689d * s, 0d), 1d)) * (256d - Math.ulp(256d)));
 
-            // This fake alpha is used in tanks etc.
-            // 252 is the alpha value default in prismatic_fluid_background
-            // TODO Ideally we pull this from the Sprite itself somehow
-            int aa = 252;
-
-            return (aa << 24) | (rr << 16) | (gg << 8) | (bb << 0);
+            return (rr << 16) | (gg << 8) | (bb << 0);
         }
 
-        @Override
-        public int getColor(FluidVariant fluidVariant, @Nullable BlockRenderView view, @Nullable BlockPos pos) {
-            return this.getFluidColor(view, pos, fluidVariant.getFluid().getDefaultState());
-        }
-
-        @Override
-        public @Nullable Sprite[] getSprites(FluidVariant fluidVariant) {
-            return this.getFluidSprites(null, null, fluidVariant.getFluid().getDefaultState());
-        }
     }
 
 }
