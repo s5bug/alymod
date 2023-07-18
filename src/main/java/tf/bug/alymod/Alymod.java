@@ -8,10 +8,7 @@ import tf.bug.alymod.block.PrismaticFluidBlock;
 import tf.bug.alymod.block.PrismaticIce;
 import tf.bug.alymod.effect.ChromaticAberrationStatusEffect;
 import tf.bug.alymod.entity.AmethystBoltEntity;
-import tf.bug.alymod.item.AmethystBolt;
-import tf.bug.alymod.item.BoltSmithingTemplate;
-import tf.bug.alymod.item.PrismaticFluidBucket;
-import tf.bug.alymod.item.PrismaticShard;
+import tf.bug.alymod.item.*;
 
 public class Alymod implements ModInitializer {
 
@@ -30,6 +27,7 @@ public class Alymod implements ModInitializer {
         PrismaticFluid.register();
         PrismaticFluidBlock.register();
 
+        EclipticClaw.register();
         PrismaticFluidBucket.register();
         PrismaticIce.register();
         PrismaticShard.register();
