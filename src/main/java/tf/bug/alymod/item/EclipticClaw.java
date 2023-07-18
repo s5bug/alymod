@@ -6,11 +6,15 @@ import net.minecraft.entity.Flutterer;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
+import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.*;
+import net.minecraft.world.World;
 import tf.bug.alymod.Alymod;
 import tf.bug.alymod.imixin.IEntityExtension;
 import tf.bug.alymod.imixin.IPlayerEntityExtension;
@@ -19,6 +23,9 @@ import tf.bug.alymod.mixin.LivingEntityAccessor;
 import tf.bug.alymod.mixin.PlayerEntityMixin;
 
 public class EclipticClaw extends Item {
+
+    public static final int MAX_IMPULSES = 1;
+    public static final double ADDITIONAL_IMPULSE_VELOCITY = 0.4d;
 
     private EclipticClaw(Settings settings) {
         super(settings);
@@ -33,6 +40,29 @@ public class EclipticClaw extends Item {
 
     public static EclipticClaw INSTANCE =
             new EclipticClaw(EclipticClaw.SETTINGS);
+
+    @Override
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        Direction d = context.getSide();
+        if(d.getOffsetY() != 0) return ActionResult.FAIL;
+
+        PlayerEntity user = context.getPlayer();
+        if(user == null) return ActionResult.FAIL;
+        if(user.isOnGround()) return ActionResult.FAIL;
+        if(user.getPitch() > -15.0f) return ActionResult.FAIL;
+
+        Vec3d lookVector = user.getRotationVector().normalize().multiply(0.4d);
+        Vec3d emphasizeY = lookVector.add(0.0d, 0.7d, 0.0d);
+
+        Vec3d v = user.getVelocity();
+        Vec3d stall = new Vec3d(v.x, 0.0d, v.z);
+        Vec3d result = stall.add(emphasizeY);
+        user.setVelocity(result);
+
+        user.getItemCooldownManager().set(this, 16);
+
+        return ActionResult.success(true);
+    }
 
     public static void register() {
         Registry.register(Registries.ITEM, EclipticClaw.ID, EclipticClaw.INSTANCE);

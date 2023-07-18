@@ -17,9 +17,24 @@ public class PlayerEntityMixin extends EntityMixin implements IPlayerEntityExten
 
     private ArrayList<Vec2f> baseVelocities = new ArrayList<>();
 
+    private int impulsesLeft = EclipticClaw.MAX_IMPULSES;
+
     @Override
     public List<Vec2f> getBaseVelocities() {
         return this.baseVelocities;
+    }
+
+    @Override
+    public boolean useEclipticClawImpulse() {
+        if(this.impulsesLeft > 0) {
+            this.impulsesLeft--;
+            return true;
+        } else return false;
+    }
+
+    @Override
+    public void resetEclipticClawImpulses() {
+        this.impulsesLeft = EclipticClaw.MAX_IMPULSES;
     }
 
     @Inject(
@@ -56,6 +71,10 @@ public class PlayerEntityMixin extends EntityMixin implements IPlayerEntityExten
     )
     public void tick(CallbackInfo ci) {
         PlayerEntity thisx = (PlayerEntity) (Object) this;
+
+        if(thisx.isOnGround() || thisx.isClimbing() || thisx.isTouchingWater() || thisx.isInLava()) {
+            this.resetEclipticClawImpulses();
+        }
 
         EclipticClaw.beforeTick(thisx);
     }

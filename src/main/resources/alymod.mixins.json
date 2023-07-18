@@ -16,9 +16,11 @@
     "PlayerEntityMixin",
     "RangedWeaponItemMixin",
     "ServerPlayerEntityMixin",
-    "SmithingScreenHandlerMixin"
+    "SmithingScreenHandlerMixin",
+    "TridentItemMixin"
   ],
   "client": [
+    "ClientPlayerEntityMixin",
     "ModelLoaderMixin"
   ],
   "injectors": {
