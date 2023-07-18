@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.Flutterer;
 import net.minecraft.entity.MovementType;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
@@ -25,7 +26,6 @@ import tf.bug.alymod.mixin.PlayerEntityMixin;
 public class EclipticClaw extends Item {
 
     public static final int MAX_IMPULSES = 1;
-    public static final double ADDITIONAL_IMPULSE_VELOCITY = 0.4d;
 
     private EclipticClaw(Settings settings) {
         super(settings);
@@ -49,10 +49,16 @@ public class EclipticClaw extends Item {
         PlayerEntity user = context.getPlayer();
         if(user == null) return ActionResult.FAIL;
         if(user.isOnGround()) return ActionResult.FAIL;
-        if(user.getPitch() > -15.0f) return ActionResult.FAIL;
+        if(user.getPitch() >= 0.0f) return ActionResult.FAIL;
 
-        Vec3d lookVector = user.getRotationVector().normalize().multiply(0.4d);
-        Vec3d emphasizeY = lookVector.add(0.0d, 0.7d, 0.0d);
+        Vec3d lookVector = user.getRotationVector().normalize().multiply(0.6d);
+
+        // upwards force can never be less than 0.6
+        double difference = 0.6d - lookVector.y;
+        if(difference < 0.0d)
+            difference = 0.0d;
+
+        Vec3d emphasizeY = lookVector.add(0.0d, difference, 0.0d);
 
         Vec3d v = user.getVelocity();
         Vec3d stall = new Vec3d(v.x, 0.0d, v.z);
@@ -61,7 +67,25 @@ public class EclipticClaw extends Item {
 
         user.getItemCooldownManager().set(this, 16);
 
+        // refresh impulse
+        ((IPlayerEntityExtension) user).resetEclipticClawImpulses();
+
         return ActionResult.success(true);
+    }
+
+    public static int fallDamage(PlayerEntity player, float fallDistance, float damageMultiplier) {
+        StatusEffectInstance statusEffectInstance = player.getStatusEffect(StatusEffects.JUMP_BOOST);
+        float f = statusEffectInstance == null ? 0.0F : (float)(statusEffectInstance.getAmplifier() + 1);
+        return MathHelper.floor((fallDistance - 15.0F - f) * damageMultiplier * 0.2f);
+    }
+
+    public static double additionalImpulseSpeed(double speed) {
+        if(speed > 0.4d) {
+            // Celeste ultras with diminishing returns
+            return speed * 0.2d * (1.0d / (1.0d + speed));
+        } else {
+            return (0.4d - speed) + (0.2d * speed);
+        }
     }
 
     public static void register() {
@@ -167,7 +191,7 @@ public class EclipticClaw extends Item {
         public static final double SOFT_CAP = (1.4D) * 0.125D;
         public static final double HARD_CAP = (2.0D) * 0.125D;
         public static final double SOFT_CAP_DEGEN = 0.65D;
-        public static final double SHARKING_SURFACE_TENSION = 0.2D;
+        public static final double SHARKING_SURFACE_TENSION = 1.0D - (0.2D);
         public static final double SHARKING_WATER_FRICTION = 1.0D - (0.1D) * 0.05D;
         public static final double TRIMP_MULTIPLIER = 1.4D;
 

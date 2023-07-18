@@ -11,6 +11,7 @@
     "ItemAccessor",
     "ItemEntityMixin",
     "LivingEntityAccessor",
+    "LivingEntityMixin",
     "PersistentProjectileEntityAccessor",
     "PersistentProjectileEntityExtension",
     "PlayerEntityMixin",

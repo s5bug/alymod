@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:dragon_head"
+    },
+    {
+      "item": "alymod:prismatic_shard"
+    },
+    {
+      "item": "alymod:prismatic_shard"
+    },
+    {
+      "item": "alymod:prismatic_shard"
+    }
+  ],
+  "result": {
+    "item": "alymod:ecliptic_claw",
+    "count": 1
+  }
+}
