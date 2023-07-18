@@ -3,6 +3,8 @@ package tf.bug.alymod.entity;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import java.util.Arrays;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.fabricmc.fabric.impl.object.builder.FabricEntityType;
@@ -174,6 +176,7 @@ public class AmethystBoltEntity extends PersistentProjectileEntity implements IP
         Registry.register(Registries.ENTITY_TYPE, AmethystBoltEntity.ID, AmethystBoltEntity.TYPE);
     }
 
+    @Environment(EnvType.CLIENT)
     public static class Renderer extends ProjectileEntityRenderer<AmethystBoltEntity> {
         public Renderer(EntityRendererFactory.Context context) {
             super(context);
@@ -185,6 +188,7 @@ public class AmethystBoltEntity extends PersistentProjectileEntity implements IP
         }
     }
 
+    @Environment(EnvType.CLIENT)
     public static void registerClient() {
         EntityRendererRegistry.register(AmethystBoltEntity.TYPE, AmethystBoltEntity.Renderer::new);
     }

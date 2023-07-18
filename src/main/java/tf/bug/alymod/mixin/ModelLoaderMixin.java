@@ -30,7 +30,7 @@ public class ModelLoaderMixin {
         if(original != null && "minecraft:item/crossbow".equals(id.toString())) {
             original.getOverrides().add(new ModelOverride(
                     AmethystBolt.CROSSBOW_MODEL_ID,
-                    AmethystBolt.CROSSBOW_MODEL_CONDITIONS
+                    AmethystBolt.getCrossbowModelConditions()
             ));
         }
 

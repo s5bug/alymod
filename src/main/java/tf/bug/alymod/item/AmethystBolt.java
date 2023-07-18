@@ -3,6 +3,8 @@ package tf.bug.alymod.item;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
@@ -81,12 +83,15 @@ public class AmethystBolt extends Item {
     public static final Identifier CROSSBOW_MODEL_ID =
             Identifier.of(Alymod.ID, "item/amethyst_bolt_crossbow");
 
-    public static final List<ModelOverride.Condition> CROSSBOW_MODEL_CONDITIONS =
-            List.of(
-                    new ModelOverride.Condition(new Identifier("charged"), 1.0f),
-                    new ModelOverride.Condition(AmethystBolt.ID, 1.0f)
-            );
+    @Environment(EnvType.CLIENT)
+    public static List<ModelOverride.Condition> getCrossbowModelConditions() {
+        return List.of(
+                new ModelOverride.Condition(new Identifier("charged"), 1.0f),
+                new ModelOverride.Condition(AmethystBolt.ID, 1.0f)
+        );
+    }
 
+    @Environment(EnvType.CLIENT)
     public static void registerClient() {
         ModelPredicateProviderRegistry.register(Items.CROSSBOW, AmethystBolt.ID, (stack, world, entity, seed) -> {
             if (CrossbowItem.isCharged(stack) && CrossbowItem.hasProjectile(stack, AmethystBolt.INSTANCE)) {

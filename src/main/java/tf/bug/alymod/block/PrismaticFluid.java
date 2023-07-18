@@ -1,6 +1,8 @@
 package tf.bug.alymod.block;
 
 import java.time.Instant;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
@@ -151,6 +153,7 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
         Registry.register(Registries.FLUID, PrismaticFluid.FLOWING_ID, PrismaticFluid.FLOWING_FLUID);
     }
 
+    @Environment(EnvType.CLIENT)
     public static void registerClient() {
         PrismaticFluid.Renderer renderer = new PrismaticFluid.Renderer();
         FluidRenderHandlerRegistry.INSTANCE.register(PrismaticFluid.STILL_FLUID, PrismaticFluid.FLOWING_FLUID, renderer);
@@ -158,6 +161,7 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
         FluidVariantRendering.register(PrismaticFluid.STILL_FLUID, renderer);
     }
 
+    @Environment(EnvType.CLIENT)
     public static final class Renderer extends SimpleFluidRenderHandler implements FluidVariantRenderHandler {
         public static final Identifier STILL =
                 Identifier.of(Alymod.ID, "block/prismatic_fluid_still");
