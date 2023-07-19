@@ -10,16 +10,16 @@ import net.minecraft.util.Identifier;
 import tf.bug.alymod.Alymod;
 import tf.bug.alymod.item.EclipticClaw;
 
-public record ImpulseJumpMessage(UUID sourceUuid) implements FabricPacket {
+public record EclipticClawUseMessage(UUID sourceUuid) implements FabricPacket {
 
     public static final Identifier ID =
-            Identifier.of(Alymod.ID, "impulse_jump");
+            Identifier.of(Alymod.ID, "ecliptic_claw_use");
 
-    public static final PacketType<ImpulseJumpMessage> TYPE =
-            PacketType.create(ImpulseJumpMessage.ID, ImpulseJumpMessage::read);
+    public static final PacketType<EclipticClawUseMessage> TYPE =
+            PacketType.create(EclipticClawUseMessage.ID, EclipticClawUseMessage::read);
 
-    public static ImpulseJumpMessage read(PacketByteBuf pbb) {
-        return new ImpulseJumpMessage(pbb.readUuid());
+    public static EclipticClawUseMessage read(PacketByteBuf pbb) {
+        return new EclipticClawUseMessage(pbb.readUuid());
     }
 
     @Override
@@ -29,17 +29,17 @@ public record ImpulseJumpMessage(UUID sourceUuid) implements FabricPacket {
 
     @Override
     public PacketType<?> getType() {
-        return ImpulseJumpMessage.TYPE;
+        return EclipticClawUseMessage.TYPE;
     }
 
     public static void register() {
-        ServerPlayNetworking.registerGlobalReceiver(ImpulseJumpMessage.TYPE, (packet, player, responseSender) -> {
+        ServerPlayNetworking.registerGlobalReceiver(EclipticClawUseMessage.TYPE, (packet, player, responseSender) -> {
             player.getWorld().playSoundFromEntity(
                     player,
                     player,
-                    EclipticClaw.IMPULSE_SOUND_EVENT,
+                    EclipticClaw.CLIMB_SOUND_EVENT,
                     SoundCategory.PLAYERS,
-                    EclipticClaw.IMPULSE_SOUND_VOLUME,
+                    EclipticClaw.CLIMB_SOUND_VOLUME,
                     1.0f
             );
         });

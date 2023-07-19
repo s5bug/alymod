@@ -37,16 +37,8 @@ public class Alymod implements ModInitializer {
 
         AmethystBoltEntity.register();
 
-        ServerPlayNetworking.registerGlobalReceiver(ImpulseJumpMessage.TYPE, (packet, player, responseSender) -> {
-            player.getWorld().playSoundFromEntity(
-                    player,
-                    player,
-                    EclipticClaw.IMPULSE_SOUND_EVENT,
-                    SoundCategory.PLAYERS,
-                    EclipticClaw.IMPULSE_SOUND_VOLUME,
-                    1.0f
-            );
-        });
+
+        ImpulseJumpMessage.register();
     }
 
 }

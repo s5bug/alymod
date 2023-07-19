@@ -32,11 +32,13 @@ public class ClientPlayerEntityMixin {
                 Vec3d currentVelocity = thisx.getVelocity();
                 Vec3d look = thisx.getRotationVector();
 
+                double newSpeed = EclipticClaw.additionalImpulseSpeed(currentVelocity.length()) + currentVelocity.length();
+
                 Vec3d redirect = look.normalize()
-                        .multiply(EclipticClaw.additionalImpulseSpeed(currentVelocity.length()) + currentVelocity.length());
+                        .multiply(newSpeed);
                 if(thisx.getPitch() < 15.0f) {
-                    // ramp jump up from 15 to -15 degrees
-                    float factor = ((15.0f - thisx.getPitch()) * (3.0f)) / 90.0f;
+                    // ramp jump up from 15 to -75 degrees
+                    float factor = (15.0f - thisx.getPitch()) / 90.0f;
                     // if we're falling then we don't want to get much higher
                     if(currentVelocity.y < 0)
                         factor /= 1.0f + (-currentVelocity.y);
@@ -50,7 +52,10 @@ public class ClientPlayerEntityMixin {
                     float jv = ((LivingEntityAccessor) thisx).invokeGetJumpVelocity();
 
                     Vec3d jump = new Vec3d(0.0d, jv * factor, 0.0d);
-                    thisx.setVelocity(redirect.add(jump));
+
+                    Vec3d recalibrate = redirect.add(jump);
+
+                    thisx.setVelocity(recalibrate);
                 } else {
                     thisx.setVelocity(redirect);
                 }

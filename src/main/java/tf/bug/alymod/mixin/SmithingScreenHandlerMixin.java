@@ -1,5 +1,7 @@
 package tf.bug.alymod.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ForgingScreenHandler;
@@ -21,20 +23,20 @@ public abstract class SmithingScreenHandlerMixin extends ForgingScreenHandler {
 
     @Shadow protected abstract void decrementStack(int slot);
 
-    @Redirect(
+    @WrapOperation(
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/screen/SmithingScreenHandler;decrementStack(I)V"
             ),
             method = "onTakeOutput(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;)V"
     )
-    public void redirectTemplateDecrement(SmithingScreenHandler instance, int slot) {
+    public void redirectTemplateDecrement(SmithingScreenHandler instance, int slot, Operation<Void> original) {
         ItemStack stack = instance.getSlot(slot).getStack();
         if(stack != null) {
             if (!stack.isEmpty() && stack.getItem().hasRecipeRemainder()) {
                 this.input.setStack(slot, stack.getItem().getRecipeRemainder(stack));
             } else {
-                this.decrementStack(slot);
+                original.call(instance, slot);
             }
         }
     }

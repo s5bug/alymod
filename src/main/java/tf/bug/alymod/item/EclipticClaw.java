@@ -1,6 +1,11 @@
 package tf.bug.alymod.item;
 
+import java.util.Objects;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.Flutterer;
 import net.minecraft.entity.MovementType;
@@ -16,6 +21,8 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import tf.bug.alymod.Alymod;
@@ -24,6 +31,7 @@ import tf.bug.alymod.imixin.IPlayerEntityExtension;
 import tf.bug.alymod.mixin.EntityAccessor;
 import tf.bug.alymod.mixin.LivingEntityAccessor;
 import tf.bug.alymod.mixin.PlayerEntityMixin;
+import tf.bug.alymod.network.EclipticClawUseMessage;
 
 public class EclipticClaw extends Item {
 
@@ -62,56 +70,62 @@ public class EclipticClaw extends Item {
             0.2f;
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        Direction d = context.getSide();
-        if(d.getOffsetY() != 0) return ActionResult.FAIL;
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+        if(!user.getWorld().isClient()) return super.use(world, user, hand);
 
-        PlayerEntity user = context.getPlayer();
-        if(user == null) return ActionResult.FAIL;
-        if(user.isOnGround()) return ActionResult.FAIL;
-        if(user.getPitch() >= 0.0f) return ActionResult.FAIL;
+        return this.clientUse(world, user, hand);
+    }
 
-        Vec3d lookVector = user.getRotationVector().normalize().multiply(0.6d);
+    @Environment(EnvType.CLIENT)
+    public TypedActionResult<ItemStack> clientUse(World world, PlayerEntity user, Hand hand) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        HitResult hit = client.crosshairTarget;
 
-        // upwards force can never be less than 0.6
-        double difference = 0.6d - lookVector.y;
-        if(difference < 0.0d)
-            difference = 0.0d;
+        if (hit.getType() == HitResult.Type.BLOCK) {
+            BlockHitResult blockHit = (BlockHitResult) hit;
 
-        Vec3d emphasizeY = lookVector.add(0.0d, difference, 0.0d);
+            Direction d = blockHit.getSide();
+            if(d.getOffsetY() != 0) return TypedActionResult.fail(user.getStackInHand(hand));
 
-        // give a boost if angle is between -15 and -75
-        if(user.getPitch() <= -15.0f) {
-            float factor = (-15 - user.getPitch()) / 60.0f;
-            if(factor > 1.0f)
-                factor = 1.0f;
+            if(user.isOnGround()) return TypedActionResult.fail(user.getStackInHand(hand));
+            if(user.getPitch() >= 0.0f) return TypedActionResult.fail(user.getStackInHand(hand));
 
-            emphasizeY = emphasizeY.add(0.0d, 0.6d * factor, 0.0d);
+            Vec3d lookVector = user.getRotationVector().normalize().multiply(0.6d);
+
+            // upwards force can never be less than 0.3
+            double difference = 0.3d - lookVector.y;
+            if(difference < 0.0d)
+                difference = 0.0d;
+
+            Vec3d emphasizeY = lookVector.add(0.0d, difference, 0.0d);
+
+            // give a boost if angle is upwards of -15, cap at -45
+            if(user.getPitch() <= -15.0f) {
+                float factor = (-15 - user.getPitch()) / 30.0f;
+                if(factor > 1.0f)
+                    factor = 1.0f;
+
+                emphasizeY = emphasizeY.add(0.0d, 0.3d * factor, 0.0d);
+            }
+
+            Vec3d v = user.getVelocity();
+            Vec3d stall = new Vec3d(v.x, 0.0d, v.z);
+            Vec3d result = stall.add(emphasizeY);
+            user.setVelocity(result);
+
+            // play sound, send packet
+            user.playSound(EclipticClaw.CLIMB_SOUND_EVENT, SoundCategory.PLAYERS, EclipticClaw.CLIMB_SOUND_VOLUME, 1.0f);
+            ClientPlayNetworking.send(new EclipticClawUseMessage(user.getUuid()));
+
+            user.getItemCooldownManager().set(this, 16);
+
+            // refresh impulse
+            ((IPlayerEntityExtension) user).resetEclipticClawImpulses();
+
+            return TypedActionResult.success(user.getStackInHand(hand), true);
+        } else {
+            return super.use(world, user, hand);
         }
-
-        Vec3d v = user.getVelocity();
-        Vec3d stall = new Vec3d(v.x, 0.0d, v.z);
-        Vec3d result = stall.add(emphasizeY);
-        user.setVelocity(result);
-
-        // play sound
-        if(!context.getWorld().isClient()) {
-            context.getWorld().playSoundFromEntity(
-                    null,
-                    user,
-                    EclipticClaw.CLIMB_SOUND_EVENT,
-                    SoundCategory.PLAYERS,
-                    EclipticClaw.CLIMB_SOUND_VOLUME,
-                    1.0f
-            );
-        }
-
-        user.getItemCooldownManager().set(this, 16);
-
-        // refresh impulse
-        ((IPlayerEntityExtension) user).resetEclipticClawImpulses();
-
-        return ActionResult.success(true);
     }
 
     public static int fallDamage(PlayerEntity player, float fallDistance, float damageMultiplier) {
@@ -121,17 +135,18 @@ public class EclipticClaw extends Item {
     }
 
     public static double additionalImpulseSpeed(double speed) {
-        if(speed > 0.4d) {
+        if(speed > 0.3d) {
             // Celeste ultras with diminishing returns
             return speed * 0.2d * (1.0d / (1.0d + speed));
         } else {
-            return (0.4d - speed) + (0.2d * speed);
+            return (0.3d - speed) + (0.2d * speed);
         }
     }
 
     public static void register() {
         Registry.register(Registries.ITEM, EclipticClaw.ID, EclipticClaw.INSTANCE);
         Registry.register(Registries.SOUND_EVENT, EclipticClaw.CLIMB_SOUND_ID, EclipticClaw.CLIMB_SOUND_EVENT);
+        Registry.register(Registries.SOUND_EVENT, EclipticClaw.IMPULSE_SOUND_ID, EclipticClaw.IMPULSE_SOUND_EVENT);
     }
 
     // Movement functions
