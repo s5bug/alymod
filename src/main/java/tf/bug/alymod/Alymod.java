@@ -1,6 +1,8 @@
 package tf.bug.alymod;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.sound.SoundCategory;
 import tf.bug.alymod.advancement.HearPrismaticIceCriterion;
 import tf.bug.alymod.advancement.InteractPrismaticIceMerchantCriterion;
 import tf.bug.alymod.block.PrismaticFluid;
@@ -9,6 +11,7 @@ import tf.bug.alymod.block.PrismaticIce;
 import tf.bug.alymod.effect.ChromaticAberrationStatusEffect;
 import tf.bug.alymod.entity.AmethystBoltEntity;
 import tf.bug.alymod.item.*;
+import tf.bug.alymod.network.ImpulseJumpMessage;
 
 public class Alymod implements ModInitializer {
 
@@ -33,6 +36,17 @@ public class Alymod implements ModInitializer {
         PrismaticShard.register();
 
         AmethystBoltEntity.register();
+
+        ServerPlayNetworking.registerGlobalReceiver(ImpulseJumpMessage.TYPE, (packet, player, responseSender) -> {
+            player.getWorld().playSoundFromEntity(
+                    player,
+                    player,
+                    EclipticClaw.IMPULSE_SOUND_EVENT,
+                    SoundCategory.PLAYERS,
+                    EclipticClaw.IMPULSE_SOUND_VOLUME,
+                    1.0f
+            );
+        });
     }
 
 }

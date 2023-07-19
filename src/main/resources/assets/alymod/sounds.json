@@ -8,5 +8,30 @@
         "pitch": 0.4
       }
     ]
+  },
+  "item.ecliptic_claw.climb": {
+    "subtitle": "subtitles.alymod.item.ecliptic_claw.climb",
+    "sounds": [
+      {
+        "name": "alymod:item/ecliptic_claw/climb"
+      },
+      {
+        "name": "alymod:item/ecliptic_claw/climb2"
+      }
+    ]
+  },
+  "item.ecliptic_claw.impulse": {
+    "subtitle": "subtitles.alymod.item.ecliptic_claw.impulse",
+    "sounds": [
+      {
+        "name": "alymod:item/ecliptic_claw/impulse"
+      },
+      {
+        "name": "alymod:item/ecliptic_claw/impulse2"
+      },
+      {
+        "name": "alymod:item/ecliptic_claw/impulse3"
+      }
+    ]
   }
 }

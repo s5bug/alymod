@@ -1,6 +1,9 @@
 package tf.bug.alymod.mixin;
 
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -8,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tf.bug.alymod.imixin.IPlayerEntityExtension;
 import tf.bug.alymod.item.EclipticClaw;
+import tf.bug.alymod.network.ImpulseJumpMessage;
 
 @Mixin(ClientPlayerEntity.class)
 public class ClientPlayerEntityMixin {
@@ -33,8 +37,15 @@ public class ClientPlayerEntityMixin {
                 if(thisx.getPitch() < 15.0f) {
                     // ramp jump up from 15 to -15 degrees
                     float factor = ((15.0f - thisx.getPitch()) * (3.0f)) / 90.0f;
+                    // if we're falling then we don't want to get much higher
+                    if(currentVelocity.y < 0)
+                        factor /= 1.0f + (-currentVelocity.y);
+
                     if(factor > 1.0f)
                         factor = 1.0f;
+
+                    // prevent too much speed gain when going horizontal
+                    factor *= factor;
 
                     float jv = ((LivingEntityAccessor) thisx).invokeGetJumpVelocity();
 
@@ -43,6 +54,9 @@ public class ClientPlayerEntityMixin {
                 } else {
                     thisx.setVelocity(redirect);
                 }
+
+                thisx.playSound(EclipticClaw.IMPULSE_SOUND_EVENT, SoundCategory.PLAYERS, EclipticClaw.IMPULSE_SOUND_VOLUME, 1.0f);
+                ClientPlayNetworking.send(new ImpulseJumpMessage(thisx.getUuid()));
             }
         }
     }

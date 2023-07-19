@@ -10,6 +10,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -31,15 +33,33 @@ public class EclipticClaw extends Item {
         super(settings);
     }
 
-    public static Item.Settings SETTINGS =
+    public static final Item.Settings SETTINGS =
             new FabricItemSettings()
                     .maxCount(1);
 
-    public static Identifier ID =
+    public static final Identifier ID =
             Identifier.of(Alymod.ID, "ecliptic_claw");
 
-    public static EclipticClaw INSTANCE =
+    public static final EclipticClaw INSTANCE =
             new EclipticClaw(EclipticClaw.SETTINGS);
+
+    public static final Identifier CLIMB_SOUND_ID =
+            Identifier.of(Alymod.ID, "item.ecliptic_claw.climb");
+
+    public static final SoundEvent CLIMB_SOUND_EVENT =
+            SoundEvent.of(CLIMB_SOUND_ID);
+
+    public static final float CLIMB_SOUND_VOLUME =
+            0.3f;
+
+    public static final Identifier IMPULSE_SOUND_ID =
+            Identifier.of(Alymod.ID, "item.ecliptic_claw.impulse");
+
+    public static final SoundEvent IMPULSE_SOUND_EVENT =
+            SoundEvent.of(IMPULSE_SOUND_ID);
+
+    public static final float IMPULSE_SOUND_VOLUME =
+            0.2f;
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
@@ -60,10 +80,31 @@ public class EclipticClaw extends Item {
 
         Vec3d emphasizeY = lookVector.add(0.0d, difference, 0.0d);
 
+        // give a boost if angle is between -15 and -75
+        if(user.getPitch() <= -15.0f) {
+            float factor = (-15 - user.getPitch()) / 60.0f;
+            if(factor > 1.0f)
+                factor = 1.0f;
+
+            emphasizeY = emphasizeY.add(0.0d, 0.6d * factor, 0.0d);
+        }
+
         Vec3d v = user.getVelocity();
         Vec3d stall = new Vec3d(v.x, 0.0d, v.z);
         Vec3d result = stall.add(emphasizeY);
         user.setVelocity(result);
+
+        // play sound
+        if(!context.getWorld().isClient()) {
+            context.getWorld().playSoundFromEntity(
+                    null,
+                    user,
+                    EclipticClaw.CLIMB_SOUND_EVENT,
+                    SoundCategory.PLAYERS,
+                    EclipticClaw.CLIMB_SOUND_VOLUME,
+                    1.0f
+            );
+        }
 
         user.getItemCooldownManager().set(this, 16);
 
@@ -90,6 +131,7 @@ public class EclipticClaw extends Item {
 
     public static void register() {
         Registry.register(Registries.ITEM, EclipticClaw.ID, EclipticClaw.INSTANCE);
+        Registry.register(Registries.SOUND_EVENT, EclipticClaw.CLIMB_SOUND_ID, EclipticClaw.CLIMB_SOUND_EVENT);
     }
 
     // Movement functions

@@ -10,3 +10,8 @@ don't expect this to be good
 - prismatic bolts
 - make prismatic fluid render via a shader instead of texture tinting
 - prevent prismatic fluid from overwriting other liquids
+
+## attributions
+
+- [Red Eclipse](https://redeclipse.net): `weapons/sword/secondary.ogg` [CC-BY-SA](https://creativecommons.org/licenses/by-sa/4.0/)
+- [Red Eclipse](https://redeclipse.net): `player/impulse.ogg` [CC-BY-SA](https://creativecommons.org/licenses/by-sa/4.0/)

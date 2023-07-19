@@ -20,5 +20,7 @@
   "item.alymod.ecliptic_claw": "Ecliptic Claw",
   "item.alymod.prismatic_fluid_bucket": "Bucket of Prismatic Fluid",
   "item.alymod.prismatic_shard": "Prismatic Shard",
-  "subtitles.alymod.block.prismatic_ice.glow": "Prismatic Ice glows"
+  "subtitles.alymod.block.prismatic_ice.glow": "Prismatic Ice glows",
+  "subtitles.alymod.item.ecliptic_claw.climb": "Ecliptic Claw activates",
+  "subtitles.alymod.item.ecliptic_claw.impulse": "Ecliptic Claw pulses"
 }
