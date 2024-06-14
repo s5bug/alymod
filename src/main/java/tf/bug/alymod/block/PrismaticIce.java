@@ -1,11 +1,12 @@
 package tf.bug.alymod.block;
 
 import java.util.Arrays;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import java.util.Optional;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
@@ -17,6 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
@@ -27,6 +29,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOffers;
+import net.minecraft.village.TradedItem;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import tf.bug.alymod.Alymod;
@@ -63,7 +66,7 @@ public class PrismaticIce extends Block {
     @Override
     public void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
         super.afterBreak(world, player, pos, state, blockEntity, tool);
-        if (EnchantmentHelper.getLevel(Enchantments.SILK_TOUCH, tool) == 0) {
+        if (!EnchantmentHelper.hasAnyEnchantmentsIn(tool, EnchantmentTags.PREVENTS_ICE_MELTING)) {
             if (world.getDimension().ultrawarm()) {
                 world.removeBlock(pos, false);
                 return;
@@ -95,7 +98,7 @@ public class PrismaticIce extends Block {
             new PrismaticIce(SETTINGS);
 
     public static final Item.Settings ITEM_SETTINGS =
-            new FabricItemSettings();
+            new Item.Settings();
 
     public static final BlockItem ITEM_INSTANCE =
             new BlockItem(INSTANCE, ITEM_SETTINGS);
@@ -111,12 +114,12 @@ public class PrismaticIce extends Block {
         // Add to high-end trades list
         final TradeOffers.Factory sellPrismaticIce =
                 (entity, random) -> {
-                    final ItemStack emeraldPrice = new ItemStack(Items.EMERALD, 20);
-                    final ItemStack blueIceConversion = new ItemStack(Items.BLUE_ICE, 1);
+                    final TradedItem emeraldPrice = new TradedItem(Items.EMERALD, 20);
+                    final TradedItem blueIceConversion = new TradedItem(Items.BLUE_ICE, 1);
                     final ItemStack prismaticIceOutput = new ItemStack(PrismaticIce.ITEM_INSTANCE, 1);
                     return new TradeOffer(
-                            emeraldPrice,
                             blueIceConversion,
+                            Optional.of(emeraldPrice),
                             prismaticIceOutput,
                             3,
                             1,

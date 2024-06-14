@@ -2,7 +2,6 @@ package tf.bug.alymod.mixin;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.network.packet.Packet;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tf.bug.alymod.imixin.IPlayerEntityExtension;
 import tf.bug.alymod.item.EclipticClaw;
-import tf.bug.alymod.network.ImpulseJumpMessage;
+import tf.bug.alymod.network.ImpulseJumpPayload;
 
 @Mixin(ClientPlayerEntity.class)
 public class ClientPlayerEntityMixin {
@@ -60,8 +59,8 @@ public class ClientPlayerEntityMixin {
                     thisx.setVelocity(redirect);
                 }
 
-                thisx.playSound(EclipticClaw.IMPULSE_SOUND_EVENT, SoundCategory.PLAYERS, EclipticClaw.IMPULSE_SOUND_VOLUME, 1.0f);
-                ClientPlayNetworking.send(new ImpulseJumpMessage(thisx.getUuid()));
+                thisx.playSound(EclipticClaw.IMPULSE_SOUND_EVENT, EclipticClaw.IMPULSE_SOUND_VOLUME, 1.0f);
+                ClientPlayNetworking.send(new ImpulseJumpPayload(thisx.getUuid()));
             }
         }
     }

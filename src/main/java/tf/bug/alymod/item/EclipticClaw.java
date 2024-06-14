@@ -1,10 +1,8 @@
 package tf.bug.alymod.item;
 
-import java.util.Objects;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.Flutterer;
@@ -17,7 +15,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
@@ -26,12 +23,10 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import tf.bug.alymod.Alymod;
-import tf.bug.alymod.imixin.IEntityExtension;
 import tf.bug.alymod.imixin.IPlayerEntityExtension;
 import tf.bug.alymod.mixin.EntityAccessor;
 import tf.bug.alymod.mixin.LivingEntityAccessor;
-import tf.bug.alymod.mixin.PlayerEntityMixin;
-import tf.bug.alymod.network.EclipticClawUseMessage;
+import tf.bug.alymod.network.EclipticClawUsePayload;
 
 public class EclipticClaw extends Item {
 
@@ -42,7 +37,7 @@ public class EclipticClaw extends Item {
     }
 
     public static final Item.Settings SETTINGS =
-            new FabricItemSettings()
+            new Item.Settings()
                     .maxCount(1);
 
     public static final Identifier ID =
@@ -114,8 +109,8 @@ public class EclipticClaw extends Item {
             user.setVelocity(result);
 
             // play sound, send packet
-            user.playSound(EclipticClaw.CLIMB_SOUND_EVENT, SoundCategory.PLAYERS, EclipticClaw.CLIMB_SOUND_VOLUME, 1.0f);
-            ClientPlayNetworking.send(new EclipticClawUseMessage(user.getUuid()));
+            user.playSound(EclipticClaw.CLIMB_SOUND_EVENT, EclipticClaw.CLIMB_SOUND_VOLUME, 1.0f);
+            ClientPlayNetworking.send(new EclipticClawUsePayload(user.getUuid()));
 
             user.getItemCooldownManager().set(this, 16);
 
@@ -189,7 +184,7 @@ public class EclipticClaw extends Item {
         double y1 = player.getY();
         double z1 = player.getZ();
         if(Quake.travel(player, movementInput)) {
-            player.increaseTravelMotionStats(player.getX() - x1, player.getY() - y1, player.getZ() - z1);
+            // player.increaseTravelMotionStats(player.getX() - x1, player.getY() - y1, player.getZ() - z1);
             return true;
         } else {
             return false;

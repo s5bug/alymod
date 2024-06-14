@@ -1,9 +1,9 @@
 package tf.bug.alymod.item;
 
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.item.FoodComponent;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
@@ -20,11 +20,11 @@ public class PrismaticShard extends Item {
     }
 
     public static Item.Settings SETTINGS =
-            new FabricItemSettings()
+            new Item.Settings()
                     .food(new FoodComponent.Builder()
                             .snack()
                             .alwaysEdible()
-                            .hunger(1)
+                            .nutrition(1)
                             .saturationModifier(0.1F)
                             .build());
 
@@ -39,12 +39,12 @@ public class PrismaticShard extends Item {
         ItemStack result = super.finishUsing(stack, world, user);
 
         int amp = 0;
-        if(user.hasStatusEffect(ChromaticAberrationStatusEffect.INSTANCE)) {
-            amp = 1 + user.getStatusEffect(ChromaticAberrationStatusEffect.INSTANCE).getAmplifier();
+        if(user.hasStatusEffect(ChromaticAberrationStatusEffect.INSTANCE.reference())) {
+            amp = 1 + user.getStatusEffect(ChromaticAberrationStatusEffect.INSTANCE.reference()).getAmplifier();
         }
 
         user.addStatusEffect(new StatusEffectInstance(
-                ChromaticAberrationStatusEffect.INSTANCE,
+                ChromaticAberrationStatusEffect.INSTANCE.reference(),
                 320,
                 amp
         ));

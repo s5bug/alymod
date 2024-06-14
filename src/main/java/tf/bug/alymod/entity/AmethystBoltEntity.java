@@ -7,7 +7,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
-import net.fabricmc.fabric.impl.object.builder.FabricEntityType;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.entity.ArrowEntityRenderer;
@@ -27,6 +26,7 @@ import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -35,6 +35,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import tf.bug.alymod.Alymod;
 import tf.bug.alymod.imixin.IPersistentProjectileEntityExtension;
 import tf.bug.alymod.item.AmethystBolt;
@@ -46,17 +47,17 @@ public class AmethystBoltEntity extends PersistentProjectileEntity implements IP
             Identifier.of(Alymod.ID, "amethyst_bolt");
 
     public static final EntityType<AmethystBoltEntity> TYPE =
-            FabricEntityTypeBuilder.<AmethystBoltEntity>create(SpawnGroup.MISC, AmethystBoltEntity::new)
-                    .dimensions(EntityDimensions.fixed(0.5F, 0.5F))
-                    .trackRangeBlocks(4)
-                    .trackedUpdateRate(20)
+            EntityType.Builder.<AmethystBoltEntity>create(AmethystBoltEntity::new, SpawnGroup.MISC)
+                    .dimensions(0.5F, 0.5F)
+                    .maxTrackingRange(4)
+                    .trackingTickInterval(20)
                     .build();
 
     public static final Identifier TEXTURE_ID =
             Identifier.of(Alymod.ID, "textures/entity/projectiles/amethyst_bolt.png");
 
-    public AmethystBoltEntity(LivingEntity owner, World world) {
-        super(AmethystBoltEntity.TYPE, owner, world);
+    public AmethystBoltEntity(LivingEntity owner, World world, ItemStack stack, @Nullable ItemStack shotFrom) {
+        super(AmethystBoltEntity.TYPE, owner, world, stack, shotFrom);
         this.setDamage(3.0d);
     }
 
@@ -131,17 +132,10 @@ public class AmethystBoltEntity extends PersistentProjectileEntity implements IP
                     livingHit.setStuckArrowCount(livingHit.getStuckArrowCount() + 1);
                 }
 
-                if (this.getPunch() > 0) {
-                    double d = Math.max(0.0, 1.0 - livingHit.getAttributeValue(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE));
-                    Vec3d vec3d = this.getVelocity().multiply(1.0, 0.0, 1.0).normalize().multiply((double)this.getPunch() * 0.6 * d);
-                    if (vec3d.lengthSquared() > 0.0) {
-                        livingHit.addVelocity(vec3d.x, 0.1, vec3d.z);
-                    }
-                }
+                this.knockback(livingHit, damageSource);
 
-                if (!this.getWorld().isClient && owner instanceof LivingEntity livingOwner) {
-                    EnchantmentHelper.onUserDamaged(livingHit, livingOwner);
-                    EnchantmentHelper.onTargetDamaged(livingOwner, livingHit);
+                if (this.getWorld() instanceof ServerWorld serverWorld && owner instanceof LivingEntity livingOwner) {
+                    EnchantmentHelper.onTargetDamaged(serverWorld, livingHit, damageSource, this.getWeaponStack());
                 }
 
                 this.onHit(livingHit);
@@ -168,7 +162,7 @@ public class AmethystBoltEntity extends PersistentProjectileEntity implements IP
     }
 
     @Override
-    protected ItemStack asItemStack() {
+    protected ItemStack getDefaultItemStack() {
         return new ItemStack(AmethystBolt.INSTANCE);
     }
 

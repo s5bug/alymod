@@ -1,16 +1,11 @@
 package tf.bug.alymod;
 
-import com.mojang.datafixers.optics.Prism;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import tf.bug.alymod.advancement.HearPrismaticIceCriterion;
@@ -21,8 +16,8 @@ import tf.bug.alymod.block.PrismaticIce;
 import tf.bug.alymod.effect.ChromaticAberrationStatusEffect;
 import tf.bug.alymod.entity.AmethystBoltEntity;
 import tf.bug.alymod.item.*;
-import tf.bug.alymod.network.EclipticClawUseMessage;
-import tf.bug.alymod.network.ImpulseJumpMessage;
+import tf.bug.alymod.network.EclipticClawUsePayload;
+import tf.bug.alymod.network.ImpulseJumpPayload;
 
 public class Alymod implements ModInitializer {
 
@@ -62,8 +57,8 @@ public class Alymod implements ModInitializer {
 
         AmethystBoltEntity.register();
 
-        EclipticClawUseMessage.register();
-        ImpulseJumpMessage.register();
+        EclipticClawUsePayload.register();
+        ImpulseJumpPayload.register();
 
         Registry.register(Registries.ITEM_GROUP, Identifier.of(Alymod.ID, "item_group"), Alymod.ITEM_GROUP);
     }

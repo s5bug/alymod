@@ -2,10 +2,13 @@ package tf.bug.alymod.item;
 
 import java.util.List;
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SmithingTemplateItem;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.loot.LootPool;
+import net.minecraft.loot.LootTable;
 import net.minecraft.loot.LootTables;
 import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.loot.entry.LootPoolEntry;
@@ -13,6 +16,7 @@ import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.loot.provider.number.UniformLootNumberProvider;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -26,7 +30,9 @@ public class BoltSmithingTemplate extends SmithingTemplateItem {
 
     private BoltSmithingTemplate(Text appliesToText, Text ingredientsText, Text titleText, Text baseSlotDescriptionText, Text additionsSlotDescriptionText, List<Identifier> emptyBaseSlotTextures, List<Identifier> emptyAdditionsSlotTextures) {
         super(appliesToText, ingredientsText, titleText, baseSlotDescriptionText, additionsSlotDescriptionText, emptyBaseSlotTextures, emptyAdditionsSlotTextures);
-        ((ItemAccessor) this).setMaxCount(1);
+        ((ItemAccessor) this).setComponents(
+                ComponentMap.of(this.getComponents(), ComponentMap.builder().add(DataComponentTypes.MAX_STACK_SIZE, 1).build())
+        );
     }
 
     @Override
@@ -101,20 +107,20 @@ public class BoltSmithingTemplate extends SmithingTemplateItem {
             );
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        super.appendTooltip(stack, world, tooltip, context);
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        super.appendTooltip(stack, context, tooltip, type);
         int titleIdx = tooltip.indexOf(TITLE_TEXT);
         tooltip.add(titleIdx + 1, NOT_CONSUMED_WARNING_TEXT);
     }
 
-    private static final Identifier BURIED_TREASURE_LOOT_TABLE_ID =
+    private static final RegistryKey<LootTable> BURIED_TREASURE_LOOT_TABLE_ID =
             LootTables.BURIED_TREASURE_CHEST;
 
     public static void register() {
         Registry.register(Registries.ITEM, BoltSmithingTemplate.ID, BoltSmithingTemplate.INSTANCE);
 
-        LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
-            if(source.isBuiltin() && BURIED_TREASURE_LOOT_TABLE_ID.equals(id)) {
+        LootTableEvents.MODIFY.register((key, tableBuilder, source) -> {
+            if(source.isBuiltin() && BURIED_TREASURE_LOOT_TABLE_ID.equals(key)) {
                 LootPoolEntry ie = ItemEntry.builder(BoltSmithingTemplate.INSTANCE)
                         .build();
 

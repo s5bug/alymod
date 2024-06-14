@@ -57,7 +57,7 @@ public class PrismaticFluidBlock extends FluidBlock {
     }
 
     @Override
-    public boolean canPathfindThrough(BlockState state, BlockView world, BlockPos pos, NavigationType type) {
+    protected boolean canPathfindThrough(BlockState state, NavigationType type) {
         return true;
     }
 

@@ -9,6 +9,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -16,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(RangedWeaponItem.class)
 public class RangedWeaponItemMixin {
 
+    @Unique
     private static final TagKey<Item> CROSSBOW_PROJECTILES_TAG =
             TagKey.of(RegistryKeys.ITEM, Identifier.of("c", "crossbow_projectiles"));
 

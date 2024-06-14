@@ -1,6 +1,5 @@
 package tf.bug.alymod.item;
 
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidFillable;
@@ -40,7 +39,7 @@ public class PrismaticFluidBucket extends BucketItem {
     }
 
     public static Item.Settings SETTINGS =
-            new FabricItemSettings()
+            new Item.Settings()
                     .recipeRemainder(Items.BUCKET)
                     .maxCount(1);
 
