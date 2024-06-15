@@ -60,7 +60,7 @@ public class AmethystBolt extends Item {
         Vector3f vector3f = vec3d2.toVector3f().rotate(quaternionf);
         projectile.setVelocity(vector3f.x(), vector3f.y(), vector3f.z(), speed, divergence);
 
-        float soundPitch = ((CrossbowItemAccessor) from).invokeGetSoundPitch(shooter.getRandom(), index);
+        float soundPitch = CrossbowItemAccessor.invokeGetSoundPitch(shooter.getRandom(), index);
         shooter.getWorld().playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.ITEM_CROSSBOW_SHOOT, SoundCategory.PLAYERS, 1.0F, soundPitch);
     }
 

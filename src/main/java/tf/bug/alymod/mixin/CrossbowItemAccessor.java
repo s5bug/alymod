@@ -9,5 +9,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(CrossbowItem.class)
 public interface CrossbowItemAccessor {
     @Invoker()
-    float invokeGetSoundPitch(Random random, int index);
+    static float invokeGetSoundPitch(Random random, int index) {
+        throw new AssertionError();
+    }
 }

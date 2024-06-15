@@ -10,6 +10,7 @@
     "item": "alymod:bolt_smithing_template"
   },
   "result": {
-    "item": "alymod:amethyst_bolt"
+    "id": "alymod:amethyst_bolt",
+    "count": 1
   }
 }

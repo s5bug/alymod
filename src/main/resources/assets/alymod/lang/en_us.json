@@ -11,6 +11,7 @@
   "death.attack.burstIntoLight": "%s burst into light",
   "effect.alymod.chromatic_aberration": "Aberration",
   "item.alymod.amethyst_bolt": "Amethyst Bolt",
+  "item.alymod.bolt_mithing_tempalte": "Bolt Fabrication Smithing Template",
   "item.alymod.bolt_smithing_template.title": "Bolt Fabrication",
   "item.alymod.bolt_smithing_template.not_consumed": "This item is not consumed upon smithing",
   "item.alymod.bolt_smithing_template.applies_to": "Blaze Rod",
@@ -23,5 +24,6 @@
   "itemGroup.alymod.item_group": "Alymod",
   "subtitles.alymod.block.prismatic_ice.glow": "Prismatic Ice glows",
   "subtitles.alymod.item.ecliptic_claw.climb": "Ecliptic Claw activates",
-  "subtitles.alymod.item.ecliptic_claw.impulse": "Ecliptic Claw pulses"
+  "subtitles.alymod.item.ecliptic_claw.impulse": "Ecliptic Claw pulses",
+  "tag.item.c.crossbow_projectiles": "Crossbow Projectiles"
 }
