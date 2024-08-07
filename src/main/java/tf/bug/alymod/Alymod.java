@@ -10,14 +10,17 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import tf.bug.alymod.advancement.HearPrismaticIceCriterion;
 import tf.bug.alymod.advancement.InteractPrismaticIceMerchantCriterion;
+import tf.bug.alymod.attachment.PlayerMonkAttachments;
 import tf.bug.alymod.block.PrismaticFluid;
 import tf.bug.alymod.block.PrismaticFluidBlock;
 import tf.bug.alymod.block.PrismaticIce;
-import tf.bug.alymod.effect.ChromaticAberrationStatusEffect;
+import tf.bug.alymod.effect.*;
 import tf.bug.alymod.entity.AmethystBoltEntity;
 import tf.bug.alymod.item.*;
 import tf.bug.alymod.network.EclipticClawUsePayload;
 import tf.bug.alymod.network.ImpulseJumpPayload;
+import tf.bug.alymod.network.MonkActionUsePayload;
+import tf.bug.alymod.network.MonkAttachmentUpdatePayload;
 
 public class Alymod implements ModInitializer {
 
@@ -34,6 +37,7 @@ public class Alymod implements ModInitializer {
                         entries.add(BoltSmithingTemplate.INSTANCE);
                         entries.add(AmethystBolt.INSTANCE);
                         entries.add(EclipticClaw.INSTANCE);
+                        entries.add(MonkSoul.INSTANCE);
                     })
                     .build();
 
@@ -43,6 +47,19 @@ public class Alymod implements ModInitializer {
         InteractPrismaticIceMerchantCriterion.register();
 
         ChromaticAberrationStatusEffect.register();
+        OpoOpoFormStatusEffect.register();
+        RaptorFormStatusEffect.register();
+        CoeurlFormStatusEffect.register();
+        PerfectBalanceStatusEffect.register();
+        BluntResistanceDownStatusEffect.register();
+        TwinSnakesStatusEffect.register();
+        DemolishStatusEffect.register();
+        FistsOfFireStatusEffect.register();
+        FistsOfWindStatusEffect.register();
+        FistsOfEarthStatusEffect.register();
+        RiddleOfFireStatusEffect.register();
+        RiddleOfWindStatusEffect.register();
+        InternalReleaseStatusEffect.register();
 
         AmethystBolt.register();
         BoltSmithingTemplate.register();
@@ -51,6 +68,7 @@ public class Alymod implements ModInitializer {
         PrismaticFluidBlock.register();
 
         EclipticClaw.register();
+        MonkSoul.register();
         PrismaticFluidBucket.register();
         PrismaticIce.register();
         PrismaticShard.register();
@@ -59,6 +77,10 @@ public class Alymod implements ModInitializer {
 
         EclipticClawUsePayload.register();
         ImpulseJumpPayload.register();
+        MonkActionUsePayload.register();
+        MonkAttachmentUpdatePayload.register();
+
+        PlayerMonkAttachments.register();
 
         Registry.register(Registries.ITEM_GROUP, Identifier.of(Alymod.ID, "item_group"), Alymod.ITEM_GROUP);
     }

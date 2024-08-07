@@ -81,7 +81,7 @@ public sealed abstract class PrismaticFluid extends FlowableFluid {
     }
 
     @Override
-    protected int getFlowSpeed(WorldView world) {
+    protected int getMaxFlowDistance(WorldView world) {
         return 1;
     }
 

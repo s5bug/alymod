@@ -13,7 +13,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -110,12 +109,12 @@ public class EclipticClaw extends Item {
 
             // play sound, send packet
             user.playSound(EclipticClaw.CLIMB_SOUND_EVENT, EclipticClaw.CLIMB_SOUND_VOLUME, 1.0f);
-            ClientPlayNetworking.send(new EclipticClawUsePayload(user.getUuid()));
+            ClientPlayNetworking.send(new EclipticClawUsePayload());
 
             user.getItemCooldownManager().set(this, 16);
 
             // refresh impulse
-            ((IPlayerEntityExtension) user).resetEclipticClawImpulses();
+            ((IPlayerEntityExtension) user).alymod$resetEclipticClawImpulses();
 
             return TypedActionResult.success(user.getStackInHand(hand), true);
         } else {
@@ -148,8 +147,8 @@ public class EclipticClaw extends Item {
     public static void beforeTick(PlayerEntity player) {
         if(!player.getWorld().isClient()) return;
 
-        if(!((IPlayerEntityExtension) player).getBaseVelocities().isEmpty()) {
-            ((IPlayerEntityExtension) player).getBaseVelocities().clear();
+        if(!((IPlayerEntityExtension) player).alymod$getBaseVelocities().isEmpty()) {
+            ((IPlayerEntityExtension) player).alymod$getBaseVelocities().clear();
         }
     }
 
@@ -163,7 +162,7 @@ public class EclipticClaw extends Item {
 
             speed *= 2.15f;
             Vec2f direction = getMovementDirection(player, new Vec2f((float) movementInput.x, (float) movementInput.z));
-            ((IPlayerEntityExtension) player).getBaseVelocities().add(direction.multiply(speed));
+            ((IPlayerEntityExtension) player).alymod$getBaseVelocities().add(direction.multiply(speed));
 
             return true;
         } else {
@@ -280,12 +279,12 @@ public class EclipticClaw extends Item {
                         Quake.accelerate(player, speed, moveDir, accel);
                     }
 
-                    if(!((IPlayerEntityExtension) player).getBaseVelocities().isEmpty()) {
+                    if(!((IPlayerEntityExtension) player).alymod$getBaseVelocities().isEmpty()) {
                         float speedMod = speed / Quake.maxMovementSpeed(player);
 
                         Vec3d vi = player.getVelocity();
                         Vec2f motions = new Vec2f((float) vi.x, (float) vi.z);
-                        for(Vec2f velocity : ((IPlayerEntityExtension) player).getBaseVelocities()) {
+                        for(Vec2f velocity : ((IPlayerEntityExtension) player).alymod$getBaseVelocities()) {
                             motions = motions.add(velocity.multiply(speedMod));
                         }
 
@@ -399,12 +398,12 @@ public class EclipticClaw extends Item {
                 player.setVelocity(v.x, 0.30000001192092896D, v.z);
             }
 
-            if(!((IPlayerEntityExtension) player).getBaseVelocities().isEmpty()) {
+            if(!((IPlayerEntityExtension) player).alymod$getBaseVelocities().isEmpty()) {
                 float speedMod = speed / Quake.maxMovementSpeed(player);
 
                 Vec3d vi = player.getVelocity();
                 Vec2f motions = new Vec2f((float) vi.x, (float) vi.z);
-                for(Vec2f velocity : ((IPlayerEntityExtension) player).getBaseVelocities()) {
+                for(Vec2f velocity : ((IPlayerEntityExtension) player).alymod$getBaseVelocities()) {
                     motions = motions.add(velocity.multiply(speedMod));
                 }
 

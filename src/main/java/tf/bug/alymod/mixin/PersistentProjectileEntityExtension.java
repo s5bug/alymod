@@ -10,7 +10,7 @@ import tf.bug.alymod.imixin.IPersistentProjectileEntityExtension;
 public class PersistentProjectileEntityExtension implements IPersistentProjectileEntityExtension {
 
     @Override
-    public float getDragInAir() {
+    public float alymod$getDragInAir() {
         return 0.99f;
     }
 
@@ -19,7 +19,7 @@ public class PersistentProjectileEntityExtension implements IPersistentProjectil
             method = "tick()V"
     )
     public float useDragInAir(float oldConstant) {
-        return this.getDragInAir();
+        return this.alymod$getDragInAir();
     }
 
 }

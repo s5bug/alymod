@@ -2,7 +2,6 @@ package tf.bug.alymod.mixin;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,7 +25,7 @@ public class ClientPlayerEntityMixin {
         ClientPlayerEntity thisx = (ClientPlayerEntity) (Object) this;
 
         if(!thisx.isOnGround() && thisx.getInventory().contains(EclipticClaw.INSTANCE.getDefaultStack())) {
-            boolean canDoubleJump = ((IPlayerEntityExtension) thisx).useEclipticClawImpulse();
+            boolean canDoubleJump = ((IPlayerEntityExtension) thisx).alymod$useEclipticClawImpulse();
             if(canDoubleJump) {
                 Vec3d currentVelocity = thisx.getVelocity();
                 Vec3d look = thisx.getRotationVector();
@@ -60,7 +59,7 @@ public class ClientPlayerEntityMixin {
                 }
 
                 thisx.playSound(EclipticClaw.IMPULSE_SOUND_EVENT, EclipticClaw.IMPULSE_SOUND_VOLUME, 1.0f);
-                ClientPlayNetworking.send(new ImpulseJumpPayload(thisx.getUuid()));
+                ClientPlayNetworking.send(new ImpulseJumpPayload());
             }
         }
     }

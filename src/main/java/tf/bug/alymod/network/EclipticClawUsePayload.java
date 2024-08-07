@@ -20,7 +20,7 @@ import net.minecraft.util.dynamic.Codecs;
 import tf.bug.alymod.Alymod;
 import tf.bug.alymod.item.EclipticClaw;
 
-public record EclipticClawUsePayload(UUID sourceUuid) implements CustomPayload {
+public record EclipticClawUsePayload() implements CustomPayload {
 
     public static final Identifier ID =
             Identifier.of(Alymod.ID, "ecliptic_claw_use");
@@ -29,7 +29,7 @@ public record EclipticClawUsePayload(UUID sourceUuid) implements CustomPayload {
             new CustomPayload.Id<>(EclipticClawUsePayload.ID);
 
     public static final PacketCodec<RegistryByteBuf, EclipticClawUsePayload> CODEC =
-            PacketCodec.tuple(Uuids.PACKET_CODEC, EclipticClawUsePayload::sourceUuid, EclipticClawUsePayload::new);
+            PacketCodec.unit(new EclipticClawUsePayload());
 
     @Override
     public Id<? extends CustomPayload> getId() {

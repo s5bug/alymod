@@ -2,7 +2,7 @@ package tf.bug.alymod.imixin;
 
 public interface IEntityExtension {
 
-    int getDisableMovementTicks();
-    void setDisableMovementTicks(int ticks);
+    int alymod$getDisableMovementTicks();
+    void alymod$setDisableMovementTicks(int ticks);
 
 }

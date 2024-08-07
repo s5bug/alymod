@@ -32,12 +32,12 @@ public class EntityMixin implements IEntityExtension {
     }
 
     @Override
-    public int getDisableMovementTicks() {
+    public int alymod$getDisableMovementTicks() {
         return this.disableMovementTicks;
     }
 
     @Override
-    public void setDisableMovementTicks(int ticks) {
+    public void alymod$setDisableMovementTicks(int ticks) {
         this.disableMovementTicks = ticks;
     }
 

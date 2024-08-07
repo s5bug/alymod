@@ -24,7 +24,11 @@
   ],
   "client": [
     "ClientPlayerEntityMixin",
-    "ModelLoaderMixin"
+    "InGameHudAccessor",
+    "InGameHudMixin",
+    "KeyboardMixin",
+    "ModelLoaderMixin",
+    "MouseMixin"
   ],
   "injectors": {
     "defaultRequire": 1

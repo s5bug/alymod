@@ -13,7 +13,7 @@ import net.minecraft.util.Uuids;
 import tf.bug.alymod.Alymod;
 import tf.bug.alymod.item.EclipticClaw;
 
-public record ImpulseJumpPayload(UUID sourceUuid) implements CustomPayload {
+public record ImpulseJumpPayload() implements CustomPayload {
 
     public static final Identifier ID =
             Identifier.of(Alymod.ID, "impulse_jump");
@@ -22,7 +22,7 @@ public record ImpulseJumpPayload(UUID sourceUuid) implements CustomPayload {
             new Id<>(ImpulseJumpPayload.ID);
 
     public static final PacketCodec<RegistryByteBuf, ImpulseJumpPayload> CODEC =
-            PacketCodec.tuple(Uuids.PACKET_CODEC, ImpulseJumpPayload::sourceUuid, ImpulseJumpPayload::new);
+            PacketCodec.unit(new ImpulseJumpPayload());
 
     @Override
     public Id<? extends CustomPayload> getId() {

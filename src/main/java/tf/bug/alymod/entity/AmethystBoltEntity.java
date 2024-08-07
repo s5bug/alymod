@@ -72,7 +72,7 @@ public class AmethystBoltEntity extends PersistentProjectileEntity implements IP
     }
 
     @Override
-    public float getDragInAir() {
+    public float alymod$getDragInAir() {
         return 1.0f;
     }
 

@@ -10,6 +10,8 @@ don't expect this to be good
 - prismatic bolts
 - make prismatic fluid render via a shader instead of texture tinting
 - prevent prismatic fluid from overwriting other liquids
+- finish all of Monk's abilities
+- get Monk sprint working
 
 ## attributions
 
