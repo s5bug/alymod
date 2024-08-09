@@ -33,5 +33,389 @@
         "name": "alymod:item/ecliptic_claw/impulse3"
       }
     ]
+  },
+  "item.monk_soul.bootshine_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.bootshine_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/bootshine_target"
+      }
+    ]
+  },
+  "item.monk_soul.true_strike_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.true_strike_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/true_strike_cast"
+      }
+    ]
+  },
+  "item.monk_soul.true_strike_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.true_strike_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/true_strike_target"
+      }
+    ]
+  },
+  "item.monk_soul.snap_punch_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.snap_punch_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/snap_punch_cast"
+      }
+    ]
+  },
+  "item.monk_soul.snap_punch_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.snap_punch_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/snap_punch_target"
+      }
+    ]
+  },
+  "item.monk_soul.internal_release_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.internal_release_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/internal_release_target"
+      }
+    ]
+  },
+  "item.monk_soul.fists_of_earth_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.fists_of_earth_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/fists_of_earth_target"
+      }
+    ]
+  },
+  "item.monk_soul.twin_snakes_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.twin_snakes_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/twin_snakes_cast"
+      }
+    ]
+  },
+  "item.monk_soul.twin_snakes_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.twin_snakes_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/twin_snakes_target"
+      }
+    ]
+  },
+  "item.monk_soul.arm_of_the_destroyer_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.arm_of_the_destroyer_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/arm_of_the_destroyer_cast"
+      }
+    ]
+  },
+  "item.monk_soul.demolish_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.demolish_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/demolish_cast"
+      }
+    ]
+  },
+  "item.monk_soul.demolish_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.demolish_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/demolish_target"
+      }
+    ]
+  },
+  "item.monk_soul.rockbreaker_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.rockbreaker_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/rockbreaker_cast"
+      }
+    ]
+  },
+  "item.monk_soul.rockbreaker_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.rockbreaker_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/rockbreaker_target"
+      }
+    ]
+  },
+  "item.monk_soul.fists_of_wind_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.fists_of_wind_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/fists_of_wind_cast"
+      }
+    ]
+  },
+  "item.monk_soul.shoulder_tackle_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.shoulder_tackle_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/shoulder_tackle_cast"
+      }
+    ]
+  },
+  "item.monk_soul.shoulder_tackle_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.shoulder_tackle_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/shoulder_tackle_target"
+      }
+    ]
+  },
+  "item.monk_soul.steel_peak_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.steel_peak_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/steel_peak_target"
+      }
+    ]
+  },
+  "item.monk_soul.fists_of_fire_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.fists_of_fire_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/fists_of_fire_target"
+      }
+    ]
+  },
+  "item.monk_soul.mantra_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.mantra_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/mantra_cast"
+      }
+    ]
+  },
+  "item.monk_soul.mantra_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.mantra_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/mantra_target"
+      }
+    ]
+  },
+  "item.monk_soul.one_ilm_punch_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.one_ilm_punch_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/one_ilm_punch_cast"
+      }
+    ]
+  },
+  "item.monk_soul.one_ilm_punch_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.one_ilm_punch_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/one_ilm_punch_target"
+      }
+    ]
+  },
+  "item.monk_soul.howling_fist_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.howling_fist_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/howling_fist_cast"
+      }
+    ]
+  },
+  "item.monk_soul.perfect_balance_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.perfect_balance_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/perfect_balance_cast"
+      }
+    ]
+  },
+  "item.monk_soul.dragon_kick_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.dragon_kick_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/dragon_kick_cast"
+      }
+    ]
+  },
+  "item.monk_soul.dragon_kick_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.dragon_kick_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/dragon_kick_target"
+      }
+    ]
+  },
+  "item.monk_soul.form_shift_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.form_shift_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/form_shift_cast"
+      }
+    ]
+  },
+  "item.monk_soul.meditation_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.meditation_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/meditation_cast"
+      }
+    ]
+  },
+  "item.monk_soul.the_forbidden_chakra_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.the_forbidden_chakra_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/the_forbidden_chakra_cast"
+      }
+    ]
+  },
+  "item.monk_soul.the_forbidden_chakra_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.the_forbidden_chakra_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/the_forbidden_chakra_target"
+      }
+    ]
+  },
+  "item.monk_soul.elixir_field_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.elixir_field_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/elixir_field_cast"
+      }
+    ]
+  },
+  "item.monk_soul.elixir_field_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.elixir_field_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/elixir_field_target"
+      }
+    ]
+  },
+  "item.monk_soul.tornado_kick_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.tornado_kick_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/tornado_kick_cast"
+      }
+    ]
+  },
+  "item.monk_soul.tornado_kick_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.tornado_kick_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/tornado_kick_target"
+      }
+    ]
+  },
+  "item.monk_soul.riddle_of_earth_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.riddle_of_earth_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/riddle_of_earth_cast"
+      }
+    ]
+  },
+  "item.monk_soul.earth_tackle_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.earth_tackle_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/earth_tackle_cast"
+      }
+    ]
+  },
+  "item.monk_soul.earth_tackle_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.earth_tackle_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/earth_tackle_target"
+      }
+    ]
+  },
+  "item.monk_soul.wind_tackle_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.wind_tackle_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/wind_tackle_cast"
+      }
+    ]
+  },
+  "item.monk_soul.wind_tackle_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.wind_tackle_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/wind_tackle_target"
+      }
+    ]
+  },
+  "item.monk_soul.fire_tackle_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.fire_tackle_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/fire_tackle_cast"
+      }
+    ]
+  },
+  "item.monk_soul.fire_tackle_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.fire_tackle_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/fire_tackle_target"
+      }
+    ]
+  },
+  "item.monk_soul.riddle_of_wind_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.riddle_of_wind_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/riddle_of_wind_cast"
+      }
+    ]
+  },
+  "item.monk_soul.riddle_of_wind_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.riddle_of_wind_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/riddle_of_wind_target"
+      }
+    ]
+  },
+  "item.monk_soul.riddle_of_fire_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.riddle_of_fire_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/riddle_of_fire_cast"
+      }
+    ]
+  },
+  "item.monk_soul.brotherhood_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.brotherhood_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/brotherhood_cast"
+      }
+    ]
+  },
+  "item.monk_soul.brotherhood_target": {
+    "subtitle": "subtitles.alymod.item.monk_soul.brotherhood_target",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/brotherhood_target"
+      }
+    ]
+  },
+  "item.monk_soul.second_wind_cast": {
+    "subtitle": "subtitles.alymod.item.monk_soul.second_wind_cast",
+    "sounds": [
+      {
+        "name": "alymod:item/monk_soul/second_wind_cast"
+      }
+    ]
   }
 }

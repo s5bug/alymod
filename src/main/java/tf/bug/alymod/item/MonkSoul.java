@@ -2,23 +2,19 @@ package tf.bug.alymod.item;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Set;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
@@ -27,10 +23,11 @@ import net.minecraft.util.Rarity;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import tf.bug.alymod.Alymod;
-import tf.bug.alymod.MonkAction;
 import tf.bug.alymod.attachment.PlayerMonkAttachments;
 import tf.bug.alymod.imixin.IPlayerEntityExtension;
 import tf.bug.alymod.mixin.InGameHudAccessor;
+import tf.bug.alymod.monk.MonkAction;
+import tf.bug.alymod.monk.StatusHelpers;
 
 public class MonkSoul extends Item {
     private MonkSoul(Settings settings) {
@@ -130,8 +127,8 @@ public class MonkSoul extends Item {
                 ctx.drawGuiTexture(GL_GAUGE, center + 130, bottom - 41, 44, 16);
                 ctx.drawGuiTexture(CHAKRA_GAUGE, center + 114, bottom - 25, 60, 15);
 
-                int gl = MonkAction.getGlStacks(cameraPlayer);
-                int chakra = MonkAction.getChakra(cameraPlayer);
+                int gl = StatusHelpers.getGreasedLightning(cameraPlayer);
+                int chakra = StatusHelpers.getChakra(cameraPlayer);
                 if(gl > 0) {
                     long expiration = cameraPlayer.getAttached(PlayerMonkAttachments.greasedLightningExpires());
                     long t = cameraPlayer.getWorld().getTime();
@@ -189,54 +186,49 @@ public class MonkSoul extends Item {
         }
 
         public static void renderAction(InGameHud hud, PlayerEntity cameraPlayer, DrawContext ctx, RenderTickCounter tickCounter, MonkAction action, int x, int y) {
+            if(action == null) return;
+            action = action.getFullReplacement(cameraPlayer);
+
             IPlayerEntityExtension playerExt = (IPlayerEntityExtension) cameraPlayer;
 
             long t = cameraPlayer.getWorld().getTime();
             float d = tickCounter.getTickDelta(true);
 
-            if(action != null) {
-                MonkAction replaced = action;
-                MonkAction next;
-                while((next = replaced.replacement(cameraPlayer)) != null) {
-                    replaced = next;
-                }
+            ctx.getMatrices().push();
 
-                ctx.getMatrices().push();
+            ctx.drawGuiTexture(action.getActionIcon(), x, y, 16, 16);
 
-                ctx.drawGuiTexture(replaced.getGuiTexture(), x, y, 16, 16);
-
-                if(!replaced.enabled(cameraPlayer, d)) {
-                    ctx.fill(RenderLayer.getGuiOverlay(), x, y, x + 16, y + 16, 0x7F000000);
-                }
-                if(replaced.highlighted(cameraPlayer, d)) {
-                    ctx.drawGuiTexture(HIGHLIGHT_TEXTURES[(int) (t % HIGHLIGHT_TEXTURES.length)], x - 2, y - 2, 20, 20);
-                }
-
-                long targetTickOffCd = playerExt.alymod$getTickOffCooldown(replaced.getCooldownGroup());
-                float targetDeltaOffCd = playerExt.alymod$getDeltaOffCooldown(replaced.getCooldownGroup());
-                boolean inThePast = (targetTickOffCd < t) ||
-                        (targetTickOffCd == t &&
-                                targetDeltaOffCd < d);
-                if(!inThePast) {
-                    Duration totalDuration = playerExt.alymod$getCooldownDuration(replaced.getCooldownGroup());
-
-                    long remainingTicks = (targetTickOffCd - t);
-                    float remainingDelta = (targetDeltaOffCd - d);
-
-                    Duration remainingDuration = Duration.ofMillis((remainingTicks * 50) + (long) (remainingDelta * 50));
-
-                    long nanosTotal = totalDuration.toNanos();
-                    long nanosRemaining = remainingDuration.toNanos();
-                    double fractionRemaining = (double) nanosRemaining / (double) nanosTotal;
-
-                    int top = y + MathHelper.floor(16.0d * (1.0d - fractionRemaining));
-                    int height = top + MathHelper.ceil(16.0d * fractionRemaining);
-
-                    ctx.fill(RenderLayer.getGuiOverlay(), x, top, x + 16, height, 0x7FFFFFFF);
-                }
-
-                ctx.getMatrices().pop();
+            if(!action.isEnabled(cameraPlayer)) {
+                ctx.fill(RenderLayer.getGuiOverlay(), x, y, x + 16, y + 16, 0x7F000000);
             }
+            if(action.isHighlighted(cameraPlayer)) {
+                ctx.drawGuiTexture(HIGHLIGHT_TEXTURES[(int) (t % HIGHLIGHT_TEXTURES.length)], x - 2, y - 2, 20, 20);
+            }
+
+            long targetTickOffCd = playerExt.alymod$getTickOffCooldown(action.getCooldownGroup());
+            float targetDeltaOffCd = playerExt.alymod$getDeltaOffCooldown(action.getCooldownGroup());
+            boolean inThePast = (targetTickOffCd < t) ||
+                    (targetTickOffCd == t &&
+                            targetDeltaOffCd < d);
+            if(!inThePast) {
+                Duration totalDuration = playerExt.alymod$getCooldownDuration(action.getCooldownGroup());
+
+                long remainingTicks = (targetTickOffCd - t);
+                float remainingDelta = (targetDeltaOffCd - d);
+
+                Duration remainingDuration = Duration.ofMillis((remainingTicks * 50) + (long) (remainingDelta * 50));
+
+                long nanosTotal = totalDuration.toNanos();
+                long nanosRemaining = remainingDuration.toNanos();
+                double fractionRemaining = (double) nanosRemaining / (double) nanosTotal;
+
+                int top = y + MathHelper.floor(16.0d * (1.0d - fractionRemaining));
+                int height = top + MathHelper.ceil(16.0d * fractionRemaining);
+
+                ctx.fill(RenderLayer.getGuiOverlay(), x, top, x + 16, height, 0x7FFFFFFF);
+            }
+
+            ctx.getMatrices().pop();
         }
 
         private static final Set<Integer> keysymIntercepts = Set.of(
@@ -343,28 +335,23 @@ public class MonkSoul extends Item {
 
         public static void doCast(MinecraftClient mc, MonkAction action, ClientPlayerEntity player, boolean queueInput) {
             if(action == null) return;
-
-            MonkAction target = action;
-            MonkAction next;
-            while((next = target.replacement(player)) != null) {
-                target = next;
-            }
+            action = action.getFullReplacement(player);
 
             IPlayerEntityExtension playerExt = (IPlayerEntityExtension) player;
 
             long t = mc.world.getTime();
             float d = mc.getRenderTickCounter().getTickDelta(true);
 
-            long targetTickOffCd = playerExt.alymod$getTickOffCooldown(target.getCooldownGroup());
-            float targetDeltaOffCd = playerExt.alymod$getDeltaOffCooldown(target.getCooldownGroup());
+            long targetTickOffCd = playerExt.alymod$getTickOffCooldown(action.getCooldownGroup());
+            float targetDeltaOffCd = playerExt.alymod$getDeltaOffCooldown(action.getCooldownGroup());
             boolean inThePast = (targetTickOffCd < t) ||
                     (targetTickOffCd == t &&
                             targetDeltaOffCd < d);
             if(inThePast) {
                 float totalDifference = (t - targetTickOffCd) + (d - targetDeltaOffCd);
 
-                if(!target.onCast(player, d)) return;
-                Duration recast = target.getRecast(player);
+                Duration recast = action.getRecast(player);
+                if(!action.tryExecuteClient(player, d)) return;
 
                 long calcTickFrom;
                 float calcDeltaFrom;
@@ -387,9 +374,9 @@ public class MonkSoul extends Item {
                     targetDelta -= 1.0F;
                 }
 
-                playerExt.alymod$setOffCooldown(target.getCooldownGroup(), recast, targetTick, targetDelta);
+                playerExt.alymod$setOffCooldown(action.getCooldownGroup(), recast, targetTick, targetDelta);
             } else {
-                if(queueInput) playerExt.alymod$setQueuedAction(target, System.nanoTime());
+                if(queueInput) playerExt.alymod$setQueuedAction(action, System.nanoTime());
             }
         }
 

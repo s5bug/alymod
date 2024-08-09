@@ -1,11 +1,14 @@
 package tf.bug.alymod;
 
+import java.util.PriorityQueue;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import tf.bug.alymod.advancement.HearPrismaticIceCriterion;
@@ -16,7 +19,9 @@ import tf.bug.alymod.block.PrismaticFluidBlock;
 import tf.bug.alymod.block.PrismaticIce;
 import tf.bug.alymod.effect.*;
 import tf.bug.alymod.entity.AmethystBoltEntity;
+import tf.bug.alymod.imixin.IMinecraftServerExtension;
 import tf.bug.alymod.item.*;
+import tf.bug.alymod.monk.MonkAction;
 import tf.bug.alymod.network.EclipticClawUsePayload;
 import tf.bug.alymod.network.ImpulseJumpPayload;
 import tf.bug.alymod.network.MonkActionUsePayload;
@@ -47,19 +52,7 @@ public class Alymod implements ModInitializer {
         InteractPrismaticIceMerchantCriterion.register();
 
         ChromaticAberrationStatusEffect.register();
-        OpoOpoFormStatusEffect.register();
-        RaptorFormStatusEffect.register();
-        CoeurlFormStatusEffect.register();
-        PerfectBalanceStatusEffect.register();
-        BluntResistanceDownStatusEffect.register();
-        TwinSnakesStatusEffect.register();
-        DemolishStatusEffect.register();
-        FistsOfFireStatusEffect.register();
-        FistsOfWindStatusEffect.register();
-        FistsOfEarthStatusEffect.register();
-        RiddleOfFireStatusEffect.register();
-        RiddleOfWindStatusEffect.register();
-        InternalReleaseStatusEffect.register();
+        MonkStatusEffects.register();
 
         AmethystBolt.register();
         BoltSmithingTemplate.register();
@@ -80,9 +73,25 @@ public class Alymod implements ModInitializer {
         MonkActionUsePayload.register();
         MonkAttachmentUpdatePayload.register();
 
+        MonkAction.register();
         PlayerMonkAttachments.register();
 
         Registry.register(Registries.ITEM_GROUP, Identifier.of(Alymod.ID, "item_group"), Alymod.ITEM_GROUP);
+
+        ServerTickEvents.START_SERVER_TICK.register(server -> {
+            IMinecraftServerExtension serverExt = (IMinecraftServerExtension) server;
+
+            for (ServerWorld world : server.getWorlds()) {
+                PriorityQueue<IMinecraftServerExtension.FutureTickRunnable> thisWorldTicks =
+                        serverExt.alymod$getFutureTickRunnableQueue(world.getRegistryKey());
+
+                long thisWorldTime = world.getTime();
+
+                while (!thisWorldTicks.isEmpty() && thisWorldTicks.peek().target() <= thisWorldTime) {
+                    thisWorldTicks.poll().action().run();
+                }
+            }
+        });
     }
 
 }

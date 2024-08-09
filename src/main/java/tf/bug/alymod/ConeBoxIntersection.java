@@ -35,30 +35,8 @@ public final class ConeBoxIntersection {
         };
     }
 
-    public static double lineSegmentIntersectsBox(Box box, Vec3d ray, double length) {
-        double dfx = 1.0d / ray.x;
-        double dfy = 1.0d / ray.y;
-        double dfz = 1.0d / ray.z;
-
-        double t1 = box.minX * dfx;
-        double t2 = box.maxX * dfx;
-        double t3 = box.minY * dfy;
-        double t4 = box.maxY * dfy;
-        double t5 = box.minZ * dfz;
-        double t6 = box.maxZ * dfz;
-
-        double tmin = Math.max(Math.max(Math.min(t1, t2), Math.min(t3, t4)), Math.min(t5, t6));
-        double tmax = Math.min(Math.min(Math.max(t1, t2), Math.max(t3, t4)), Math.max(t5, t6));
-
-        if(tmax < 0) return -1;
-        if(tmin > tmax) return -1;
-        if(tmin > length) return -1;
-
-        return tmin;
-    }
-
     public static boolean coneAxisIntersectsBox(Box box, Vec3d coneAxisD, double coneLength) {
-        return lineSegmentIntersectsBox(box, coneAxisD, coneLength) >= 0;
+        return box.contains(Vec3d.ZERO) || box.raycast(Vec3d.ZERO, coneAxisD.multiply(coneLength)).isPresent();
     }
 
     public static int computeCandidatesOnBoxEdges(Vec3d coneDirectionD, double coneLength, Vec3d[] vertices, IntIntPair[] edges, double[] pmin, double[] pmax, int numCandidates, IntIntPair[] candidates) {

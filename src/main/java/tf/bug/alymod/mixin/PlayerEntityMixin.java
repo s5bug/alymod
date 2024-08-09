@@ -11,21 +11,28 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tf.bug.alymod.MonkAction;
 import tf.bug.alymod.imixin.IPlayerEntityExtension;
 import tf.bug.alymod.item.EclipticClaw;
+import tf.bug.alymod.monk.CooldownGroup;
+import tf.bug.alymod.monk.MonkAction;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin extends EntityMixin implements IPlayerEntityExtension {
 
+    // FIXME when initializers are fixed, move this stuff back to initializers
+    // = new ArrayList<>()
     @Unique
-    private final ArrayList<Vec2f> baseVelocities = new ArrayList<>();
+    private ArrayList<Vec2f> baseVelocities;
 
+    // FIXME = EclipticClaw.MAX_IMPULSES;
     @Unique
-    private int impulsesLeft = EclipticClaw.MAX_IMPULSES;
+    private int impulsesLeft;
 
     @Override
     public List<Vec2f> alymod$getBaseVelocities() {
+        if(this.baseVelocities == null) {
+            this.baseVelocities = new ArrayList<>();
+        }
         return this.baseVelocities;
     }
 
@@ -84,32 +91,53 @@ public class PlayerEntityMixin extends EntityMixin implements IPlayerEntityExten
         EclipticClaw.beforeTick(thisx);
     }
 
+    // FIXME = new Duration[CooldownGroup.values().length]
     @Unique
-    private final Duration[] cooldownDurations = new Duration[16];
+    private Duration[] cooldownDurations;
+    // FIXME = new long[CooldownGroup.values().length]
     @Unique
-    private final long[] tickOffCooldowns = new long[16];
+    private long[] tickOffCooldowns;
+    // FIXME = new float[CooldownGroup.values().length]
     @Unique
-    private final float[] deltaOffCooldowns = new float[16];
+    private float[] deltaOffCooldowns;
 
-    public Duration alymod$getCooldownDuration(int group) {
-        return cooldownDurations[group];
+    public Duration alymod$getCooldownDuration(CooldownGroup group) {
+        if(this.cooldownDurations == null) {
+            this.cooldownDurations = new Duration[CooldownGroup.values().length];
+        }
+        return this.cooldownDurations[group.ordinal()];
     }
 
     @Override
-    public long alymod$getTickOffCooldown(int group) {
-        return tickOffCooldowns[group];
+    public long alymod$getTickOffCooldown(CooldownGroup group) {
+        if(this.tickOffCooldowns == null) {
+            this.tickOffCooldowns = new long[CooldownGroup.values().length];
+        }
+        return this.tickOffCooldowns[group.ordinal()];
     }
 
     @Override
-    public float alymod$getDeltaOffCooldown(int group) {
-        return deltaOffCooldowns[group];
+    public float alymod$getDeltaOffCooldown(CooldownGroup group) {
+        if(this.deltaOffCooldowns == null) {
+            this.deltaOffCooldowns = new float[CooldownGroup.values().length];
+        }
+        return this.deltaOffCooldowns[group.ordinal()];
     }
 
     @Override
-    public void alymod$setOffCooldown(int group, Duration duration, long tick, float delta) {
-        cooldownDurations[group] = duration;
-        tickOffCooldowns[group] = tick;
-        deltaOffCooldowns[group] = delta;
+    public void alymod$setOffCooldown(CooldownGroup group, Duration duration, long tick, float delta) {
+        if(this.cooldownDurations == null) {
+            this.cooldownDurations = new Duration[CooldownGroup.values().length];
+        }
+        this.cooldownDurations[group.ordinal()] = duration;
+        if(this.tickOffCooldowns == null) {
+            this.tickOffCooldowns = new long[CooldownGroup.values().length];
+        }
+        this.tickOffCooldowns[group.ordinal()] = tick;
+        if(this.deltaOffCooldowns == null) {
+            this.deltaOffCooldowns = new float[CooldownGroup.values().length];
+        }
+        this.deltaOffCooldowns[group.ordinal()] = delta;
     }
 
     @Unique
