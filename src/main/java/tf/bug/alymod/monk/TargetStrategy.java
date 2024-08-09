@@ -1,6 +1,8 @@
 package tf.bug.alymod.monk;
 
 import java.util.List;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MovementType;
@@ -15,9 +17,11 @@ public interface TargetStrategy<T extends Entity> {
 
     public static final record Result<T extends Entity>(boolean castSucceeded, List<T> targets) {}
 
+    @Environment(EnvType.CLIENT)
     Result<T> attemptTarget(ClientPlayerEntity player, float tickDelta);
 
     public static final record Self() implements TargetStrategy<PlayerEntity> {
+        @Environment(EnvType.CLIENT)
         @Override
         public Result<PlayerEntity> attemptTarget(ClientPlayerEntity player, float tickDelta) {
             return new Result<>(true, List.of(player));
@@ -25,6 +29,7 @@ public interface TargetStrategy<T extends Entity> {
     }
 
     public static final record Single(int range) implements TargetStrategy<Entity> {
+        @Environment(EnvType.CLIENT)
         @Override
         public Result<Entity> attemptTarget(ClientPlayerEntity player, float tickDelta) {
             Vec3d segment = player.getRotationVec(tickDelta).multiply(range);
@@ -70,6 +75,7 @@ public interface TargetStrategy<T extends Entity> {
             return tmin;
         }
 
+        @Environment(EnvType.CLIENT)
         @Override
         public Result<Entity> attemptTarget(ClientPlayerEntity player, float tickDelta) {
             Vec3d ray = player.getRotationVec(tickDelta);
@@ -105,6 +111,7 @@ public interface TargetStrategy<T extends Entity> {
     }
 
     public static final record Spherical(int radius) implements TargetStrategy<Entity> {
+        @Environment(EnvType.CLIENT)
         @Override
         public Result<Entity> attemptTarget(ClientPlayerEntity player, float tickDelta) {
             List<Entity> targets = player.getWorld().getOtherEntities(
@@ -117,6 +124,7 @@ public interface TargetStrategy<T extends Entity> {
     }
 
     public static final record Conal(int radius, double angle) implements TargetStrategy<Entity> {
+        @Environment(EnvType.CLIENT)
         @Override
         public Result<Entity> attemptTarget(ClientPlayerEntity player, float tickDelta) {
             Vec3d coneOrigin = player.getCameraPosVec(tickDelta);
@@ -138,6 +146,7 @@ public interface TargetStrategy<T extends Entity> {
     }
 
     public static final record Line(int range) implements TargetStrategy<Entity> {
+        @Environment(EnvType.CLIENT)
         @Override
         public Result<Entity> attemptTarget(ClientPlayerEntity player, float tickDelta) {
             Vec3d raycastMin = player.getCameraPosVec(tickDelta);

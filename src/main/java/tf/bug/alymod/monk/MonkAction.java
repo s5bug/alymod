@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -39,7 +41,7 @@ public enum MonkAction {
             new TargetStrategy.Single(3),
             new ActionTimeline.FlatDamage(
                     (p, e) -> PositionalHelpers.isRear(p, e) ? 180 : 140,
-                    Duration.ofMillis(1600L)
+                    Duration.ofMillis(800L)
             ).withCast((player, state) -> {
                 if(!state.damage.isEmpty()) StatusHelpers.giveCoeurlForm(player);
             }),
@@ -529,10 +531,12 @@ public enum MonkAction {
         return result;
     }
 
+    @Environment(EnvType.CLIENT)
     public Duration getRecast(ClientPlayerEntity player) {
         return this.cooldownStrategy.getCooldown(player, MonkStats.Lv70.INSTANCE);
     }
 
+    @Environment(EnvType.CLIENT)
     public boolean tryExecuteClient(ClientPlayerEntity player, float tickDelta) {
         TargetStrategy.Result<? extends Entity> result = this.choreo.strategy().attemptTarget(player, tickDelta);
         if(!result.castSucceeded()) return false;

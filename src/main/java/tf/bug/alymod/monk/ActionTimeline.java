@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.*;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -48,7 +49,7 @@ public interface ActionTimeline<T extends Entity, S> {
 
     public static int snapshotDamage(PlayerEntity player, MonkStats stats,
                                      int potency, boolean criticalHit, boolean directHit,
-                                     double buffMultiplier, Random r) {
+                                     double buffDebuffMultiplier, Random r) {
         int d1 = (int) Math.floor(potency * stats.getMultiplierAttackPower() * stats.getMultiplierDetermination());
         int d2 = Math.floorDiv(d1 * stats.getMultiplierWeaponDamage(), 100);
 
@@ -58,7 +59,7 @@ public interface ActionTimeline<T extends Entity, S> {
         int d3 = (int) Math.floor(d2 * critMulti * dhMulti);
 
         double variance = 0.95d + (0.1d * r.nextDouble());
-        int d4 = (int) Math.floor(d3 * variance * buffMultiplier);
+        int d4 = (int) Math.floor(d3 * variance * buffDebuffMultiplier);
 
         return d4;
     }
@@ -74,6 +75,12 @@ public interface ActionTimeline<T extends Entity, S> {
                 player.hasStatusEffect(MonkStatusEffects.FISTS_OF_FIRE.reference()) ? 1.06 : 1.00;
 
         return glBonus * twinSnakesBonus * rofBonus * fofBonus;
+    }
+
+    public static double getDebuffDamageBonus(LivingEntity target) {
+        double bluntResistBonus =
+                target.hasStatusEffect(MonkStatusEffects.BLUNT_RESISTANCE_DOWN.reference()) ? 1.10 : 1.00;
+        return bluntResistBonus;
     }
 
     public static final record FlatDamage(ToIntBiFunction<ServerPlayerEntity, Entity> potency,
@@ -111,10 +118,13 @@ public interface ActionTimeline<T extends Entity, S> {
         public void snapshot(ServerPlayerEntity player, MonkStats stats, Entity target, State state) {
             int potency = this.potency.applyAsInt(player, target);
             double buffs = getBuffDamageBonus(player);
+            double debuffs = target instanceof LivingEntity living ? getDebuffDamageBonus(living) : 1.0d;
             boolean crit = guaranteedCrit.test(player, target) || snapshotCriticalHit(player, stats, player.getRandom());
             boolean dhit = guaranteedDhit.test(player, target) || snapshotDirectHit(player, stats, player.getRandom());
 
-            final int damage = snapshotDamage(player, stats, potency, crit, dhit, buffs, player.getRandom());
+            final int damage = snapshotDamage(
+                    player, stats, potency, crit, dhit,
+                    buffs * debuffs, player.getRandom());
 
             state.damage.put(target, damage);
             if(crit) state.crits.add(target);
@@ -129,8 +139,10 @@ public interface ActionTimeline<T extends Entity, S> {
 
             // TODO log and stuff
             int damage = state.damage.getInt(target);
-            target.damage(player.getServerWorld().getDamageSources().create(StrikingDamage.KEY),
-                    damage / 200.0F);
+            target.damage(
+                    player.getServerWorld().getDamageSources().create(StrikingDamage.KEY, player),
+                    damage / 50.0F
+            );
         }
     }
 

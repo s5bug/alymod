@@ -79,8 +79,8 @@ public class MonkSoul extends Item {
                 Identifier.of(Alymod.ID, "hud/chakra_stack");
 
         private static final MonkAction[][] hotbar1 = new MonkAction[][] {
-                new MonkAction[] { MonkAction.DRAGON_KICK, MonkAction.TWIN_SNAKES, MonkAction.DEMOLISH },
-                new MonkAction[] { MonkAction.BOOTSHINE, MonkAction.TRUE_STRIKE, MonkAction.SNAP_PUNCH },
+                new MonkAction[] { MonkAction.BOOTSHINE, MonkAction.TRUE_STRIKE, MonkAction.DEMOLISH },
+                new MonkAction[] { MonkAction.DRAGON_KICK, MonkAction.TWIN_SNAKES, MonkAction.SNAP_PUNCH },
                 new MonkAction[] { MonkAction.ARM_OF_THE_DESTROYER, MonkAction.ONE_ILM_PUNCH, MonkAction.ROCKBREAKER },
                 new MonkAction[] { MonkAction.FORM_SHIFT, MonkAction.SECOND_WIND, MonkAction.MANTRA }
         };

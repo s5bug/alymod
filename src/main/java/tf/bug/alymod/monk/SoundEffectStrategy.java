@@ -26,6 +26,7 @@ public interface SoundEffectStrategy {
                 Identifier targetIdentifier,
                 SoundEvent targetEvent
         ) implements SoundEffect {
+            @Environment(EnvType.CLIENT)
             @Override
             public void clientOnSnapshotSelf(ClientPlayerEntity cpe) {
                 if(this.castVolume <= 0.0f) return;
@@ -36,6 +37,7 @@ public interface SoundEffectStrategy {
                 );
             }
 
+            @Environment(EnvType.CLIENT)
             @Override
             public void clientOnSnapshotTarget(ClientPlayerEntity cpe, Entity target) {
                 if(this.targetVolume <= 0.0f) return;

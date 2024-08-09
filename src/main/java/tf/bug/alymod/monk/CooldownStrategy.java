@@ -1,16 +1,20 @@
 package tf.bug.alymod.monk;
 
 import java.time.Duration;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.network.ClientPlayerEntity;
 import tf.bug.alymod.effect.MonkStatusEffects;
 
 public interface CooldownStrategy {
 
+    @Environment(EnvType.CLIENT)
     Duration getCooldown(ClientPlayerEntity player, MonkStats stats);
 
     public static final record Weaponskill(Duration baseRecast) implements CooldownStrategy {
         public Weaponskill() { this(Duration.ofMillis(2500)); }
 
+        @Environment(EnvType.CLIENT)
         @Override
         public Duration getCooldown(ClientPlayerEntity player, MonkStats stats) {
             int gcd1 = (int) Math.floor(baseRecast.toMillis() * stats.getMultiplierSkillSpeed());
@@ -30,6 +34,7 @@ public interface CooldownStrategy {
     }
 
     public static final record Ability(Duration recast) implements CooldownStrategy {
+        @Environment(EnvType.CLIENT)
         @Override
         public Duration getCooldown(ClientPlayerEntity player, MonkStats stats) {
             return recast;
