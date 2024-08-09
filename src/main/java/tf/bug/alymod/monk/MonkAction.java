@@ -325,7 +325,7 @@ public enum MonkAction {
             p -> StatusHelpers.getGreasedLightning(p) >= 3,
             new TargetStrategy.Single(3),
             new ActionTimeline.FlatDamage(
-                    (p, e) -> 330,
+                    (p, e) -> 430,
                     Duration.ofMillis(1700L)
             ).withCast((p, s) -> StatusHelpers.consumeGreasedLightning(p)),
             new CooldownStrategy.Ability(Duration.ofSeconds(10L)),
