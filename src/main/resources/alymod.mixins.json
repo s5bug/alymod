@@ -21,6 +21,8 @@
     "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
     "SmithingScreenHandlerMixin",
+    "StatusEffectInstanceAccessor",
+    "StatusEffectInstanceMixin",
     "TridentItemMixin"
   ],
   "client": [

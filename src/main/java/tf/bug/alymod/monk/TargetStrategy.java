@@ -2,15 +2,11 @@ package tf.bug.alymod.monk;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MovementType;
-import net.minecraft.entity.ai.brain.Brain;
-import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
@@ -25,6 +21,14 @@ public interface TargetStrategy<T extends Entity> {
 
     @Environment(EnvType.CLIENT)
     Result<T> attemptTarget(ClientPlayerEntity player, float tickDelta);
+
+    default TargetStrategy<PlayerEntity> partyOnly() {
+        return new PartyOnly(this);
+    }
+
+    default TargetStrategy<T> join(TargetStrategy<T> other) {
+        return new Join<>(this, other);
+    }
 
     public static final record Self() implements TargetStrategy<PlayerEntity> {
         @Environment(EnvType.CLIENT)
@@ -179,6 +183,37 @@ public interface TargetStrategy<T extends Entity> {
                 }
             }
             return new Result<>(true, targets);
+        }
+    }
+
+    public static final record PartyOnly(TargetStrategy<? extends Entity> other) implements TargetStrategy<PlayerEntity> {
+        @Override
+        public Result<PlayerEntity> attemptTarget(ClientPlayerEntity player, float tickDelta) {
+            Result<? extends Entity> result = other.attemptTarget(player, tickDelta);
+            ArrayList<PlayerEntity> filtered = new ArrayList<>();
+            for(Entity e : result.targets()) {
+                if(e instanceof PlayerEntity pe) filtered.add(pe);
+            }
+            return new Result<>(result.castSucceeded(), filtered);
+        }
+
+        @Override
+        public TargetStrategy<PlayerEntity> partyOnly() {
+            return this;
+        }
+    }
+
+    public static final record Join<T extends U, U extends Entity>(TargetStrategy<T> left, TargetStrategy<U> right) implements TargetStrategy<U> {
+        @Override
+        public Result<U> attemptTarget(ClientPlayerEntity player, float tickDelta) {
+            Result<T> lr = left.attemptTarget(player, tickDelta);
+            Result<U> rr = right.attemptTarget(player, tickDelta);
+
+            ArrayList<U> results = new ArrayList<U>(lr.targets().size() + rr.targets().size());
+            results.addAll(lr.targets());
+            results.addAll(rr.targets());
+
+            return new Result<>(lr.castSucceeded() && rr.castSucceeded(), results);
         }
     }
 

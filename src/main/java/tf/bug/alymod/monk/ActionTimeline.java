@@ -74,8 +74,10 @@ public interface ActionTimeline<T extends Entity, S> {
                 player.hasStatusEffect(MonkStatusEffects.RIDDLE_OF_FIRE.reference()) ? 1.30 : 1.00;
         double fofBonus =
                 player.hasStatusEffect(MonkStatusEffects.FISTS_OF_FIRE.reference()) ? 1.06 : 1.00;
+        double brotherhoodBonus =
+                player.hasStatusEffect(MonkStatusEffects.BROTHERHOOD.reference()) ? 1.05 : 1.00;
 
-        return glBonus * twinSnakesBonus * rofBonus * fofBonus;
+        return glBonus * twinSnakesBonus * rofBonus * fofBonus * brotherhoodBonus;
     }
 
     public static double getDebuffDamageBonus(LivingEntity target) {

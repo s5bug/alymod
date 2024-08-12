@@ -1,14 +1,24 @@
 package tf.bug.alymod.monk;
 
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tf.bug.alymod.attachment.PlayerMonkAttachments;
 import tf.bug.alymod.effect.*;
+import tf.bug.alymod.imixin.IStatusEffectInstanceExtension;
+import tf.bug.alymod.mixin.LivingEntityAccessor;
+import tf.bug.alymod.mixin.StatusEffectInstanceAccessor;
 import tf.bug.alymod.network.MonkAttachmentUpdatePayload;
 
 public final class StatusHelpers {
+    private static final Logger log = LoggerFactory.getLogger(StatusHelpers.class);
+
     private StatusHelpers() {}
 
     public static boolean hasPerfectBalance(PlayerEntity pe) {
@@ -188,11 +198,49 @@ public final class StatusHelpers {
         ), pe);
     }
 
-    public static void giveMeditativeBrotherhood(PlayerEntity pe) {
-        pe.addStatusEffect(new StatusEffectInstance(
-                MonkStatusEffects.MEDITATIVE_BROTHERHOOD.reference(),
-                15 * 20
-        ), pe);
+    public static void giveMeditativeBrotherhood(PlayerEntity target, PlayerEntity source) {
+        StatusEffectInstance existing =
+                target.getStatusEffect(MonkStatusEffects.MEDITATIVE_BROTHERHOOD.reference());
+        StatusEffectInstance newMain = addBrotherhoodSource(source, existing);
+
+        target.removeStatusEffectInternal(MonkStatusEffects.MEDITATIVE_BROTHERHOOD.reference());
+        target.addStatusEffect(newMain);
+    }
+
+    private static StatusEffectInstance newMeditativeBrotherhood(PlayerEntity source, @Nullable StatusEffectInstance longer) {
+        StatusEffectInstance sei;
+        if(longer == null) {
+            sei = new StatusEffectInstance(
+                    MonkStatusEffects.MEDITATIVE_BROTHERHOOD.reference(),
+                    15 * 20,
+                    0
+            );
+            IStatusEffectInstanceExtension seiExt = (IStatusEffectInstanceExtension) sei;
+            seiExt.alymod$setMeditativeBrotherhoodApplier(source.getUuid());
+        } else {
+            sei = new StatusEffectInstance(
+                    MonkStatusEffects.MEDITATIVE_BROTHERHOOD.reference(),
+                    15 * 20,
+                    1 + longer.getAmplifier()
+            );
+            IStatusEffectInstanceExtension seiExt = (IStatusEffectInstanceExtension) sei;
+            seiExt.alymod$setMeditativeBrotherhoodApplier(source.getUuid());
+            StatusEffectInstanceAccessor seiAcc = (StatusEffectInstanceAccessor) sei;
+            seiAcc.setHiddenEffect(longer);
+        }
+        return sei;
+    }
+
+    private static StatusEffectInstance addBrotherhoodSource(PlayerEntity source, @Nullable StatusEffectInstance existing) {
+        if(existing != null && existing.isDurationBelow(15 * 20)) {
+            StatusEffectInstanceAccessor access = (StatusEffectInstanceAccessor) existing;
+            access.setAmplifier(existing.getAmplifier() + 1);
+
+            access.setHiddenEffect(addBrotherhoodSource(source, access.getHiddenEffect()));
+            return existing;
+        } else {
+            return newMeditativeBrotherhood(source, existing);
+        }
     }
 
     public static void syncGaugeState(ServerPlayerEntity pe) {

@@ -404,12 +404,12 @@ public enum MonkAction {
     ),
     BROTHERHOOD(
             CooldownGroup.BROTHERHOOD,
-            new TargetStrategy.Self(),
+            new TargetStrategy.Spherical(15).partyOnly().join(new TargetStrategy.Self()),
             new ActionTimeline.DelayedAction<>(
                     Duration.ofMillis(700L),
                     (p, e) -> {
                         StatusHelpers.giveBrotherhood(e);
-                        StatusHelpers.giveMeditativeBrotherhood(e);
+                        StatusHelpers.giveMeditativeBrotherhood(e, p);
                     }
             ),
             new CooldownStrategy.Ability(Duration.ofSeconds(90L)),
