@@ -363,6 +363,7 @@ public class MonkSoul extends Item {
                     (targetTickOffCd == t &&
                             targetDeltaOffCd < d);
             if(inThePast) {
+                if(!action.isEnabled(player)) return;
                 float totalDifference = (t - targetTickOffCd) + (d - targetDeltaOffCd);
 
                 Duration recast = action.getRecast(player);

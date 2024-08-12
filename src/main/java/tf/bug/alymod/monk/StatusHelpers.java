@@ -22,7 +22,7 @@ public final class StatusHelpers {
 
         pe.addStatusEffect(new StatusEffectInstance(
                 MonkStatusEffects.PERFECT_BALANCE.reference(),
-                10 * 20
+                (10 * 20) + 12 // 10.6
         ), pe);
     }
 
