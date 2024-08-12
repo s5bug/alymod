@@ -99,6 +99,13 @@ public class MonkSoul extends Item {
                 new MonkAction[] { MonkAction.FISTS_OF_WIND, MonkAction.FISTS_OF_FIRE, MonkAction.FISTS_OF_EARTH }
         };
 
+        private static final MonkAction[][] hotbar4 = new MonkAction[][] {
+                new MonkAction[] { null, null, null },
+                new MonkAction[] { MonkAction.SPRINT, null, null },
+                new MonkAction[] { null, null, null },
+                new MonkAction[] { null, null, null }
+        };
+
         public static boolean shouldRenderHotbar(InGameHud hud) {
             PlayerEntity cameraPlayer = ((InGameHudAccessor) hud).invokeGetCameraPlayer();
             return cameraPlayer != null && !cameraPlayer.isSpectator() && cameraPlayer.getOffHandStack().isOf(MonkSoul.INSTANCE);
@@ -178,6 +185,14 @@ public class MonkSoul extends Item {
                         MonkAction hotbar3Action = hotbar3[row][col];
 
                         renderAction(hud, cameraPlayer, ctx, tickCounter, hotbar3Action, x, y);
+                    }
+
+                    for (int col = 0; col < 3; col++) {
+                        int x = (3 + (center + 45)) + (20 * col);
+
+                        MonkAction hotbar4Action = hotbar4[row][col];
+
+                        renderAction(hud, cameraPlayer, ctx, tickCounter, hotbar4Action, x, y);
                     }
                 }
                 return true;
@@ -305,7 +320,7 @@ public class MonkSoul extends Item {
         public static void handleKeyPressed(InputUtil.Key key) {
             MonkAction[][] targetHotbar = hotbar1;
             if(controlHeld) targetHotbar = hotbar3;
-            else if(shiftHeld) { /* targetHotbar = hotbar4 */ }
+            else if(shiftHeld) { targetHotbar = hotbar4; }
 
             int mouseOffset = 0;
             if(shiftHeld) mouseOffset += 2;

@@ -1,11 +1,17 @@
 package tf.bug.alymod.monk;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MovementType;
+import net.minecraft.entity.ai.brain.Brain;
+import net.minecraft.entity.ai.brain.MemoryModuleType;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.EntityHitResult;
@@ -158,6 +164,20 @@ public interface TargetStrategy<T extends Entity> {
                     e -> !e.isSpectator() && e.canHit() && (e.getBoundingBox().contains(raycastMin) ||
                             e.getBoundingBox().raycast(raycastMin, raycastMax).isPresent())
             );
+            return new Result<>(true, targets);
+        }
+    }
+
+    public static final record Aggressors() implements TargetStrategy<MobEntity> {
+        @Environment(EnvType.CLIENT)
+        @Override
+        public Result<MobEntity> attemptTarget(ClientPlayerEntity player, float tickDelta) {
+            ArrayList<MobEntity> targets = new ArrayList<>();
+            for (Entity e : player.clientWorld.getEntities()) {
+                if(e instanceof MobEntity me) {
+                    targets.add(me);
+                }
+            }
             return new Result<>(true, targets);
         }
     }

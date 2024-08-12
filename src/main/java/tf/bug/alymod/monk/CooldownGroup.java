@@ -17,4 +17,5 @@ public enum CooldownGroup {
     RIDDLE_OF_FIRE,
     BROTHERHOOD,
     SECOND_WIND,
+    SPRINT,
 }

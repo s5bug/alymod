@@ -386,7 +386,10 @@ public enum MonkAction {
             new ActionTimeline.FlatDamage(
                     (p, e) -> 65,
                     Duration.ofMillis(500L)
-            ).withCast((p, s) -> StatusHelpers.consumeRiddleOfWind(p)),
+            ).withCast((p, s) -> {
+                StatusHelpers.consumeRiddleOfWind(p);
+                StatusHelpers.giveGreasedLightning(p);
+            }),
             new CooldownStrategy.Ability(Duration.ofSeconds(1L)),
             new SoundEffectStrategy.CastTargetInstant(0.95f, 0.95f),
             "riddle_of_wind"
@@ -420,6 +423,18 @@ public enum MonkAction {
             new CooldownStrategy.Ability(Duration.ofSeconds(120L)),
             new SoundEffectStrategy.CastTargetInstant(0.665f, -1),
             "second_wind"
+    ),
+    SPRINT(
+            CooldownGroup.SPRINT,
+            new TargetStrategy.Aggressors(),
+            new ActionTimeline.CombatDifferenceAction<>(
+                    () -> 10 * 20,
+                    () -> 20 * 20,
+                    StatusHelpers::giveSprint
+            ),
+            new CooldownStrategy.Ability(Duration.ofSeconds(60L)),
+            new SoundEffectStrategy.CastTargetInstant(-1, -1),
+            "sprint"
     )
     ;
 

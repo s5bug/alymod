@@ -11,6 +11,7 @@ import java.util.function.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.random.Random;
@@ -184,6 +185,41 @@ public interface ActionTimeline<T extends Entity, S> {
         public void apply(ServerPlayerEntity player, T target, Void state) {
             onApply.accept(player, target);
         }
+    }
+
+    public static final record CombatDifferenceAction<U>(
+            Supplier<U> inCombat,
+            Supplier<U> outCombat,
+            BiConsumer<ServerPlayerEntity, U> action
+    ) implements ActionTimeline<MobEntity, boolean[]> {
+        @Override
+        public boolean[] emptyMutable() {
+            return new boolean[] { false };
+        }
+
+        @Override
+        public void snapshot(ServerPlayerEntity player, MonkStats stats, MobEntity target, boolean[] state) {
+            if(player.equals(target.getTarget())) state[0] = true;
+        }
+
+        @Override
+        public void cast(ServerPlayerEntity player, boolean[] state) {
+            U value;
+            if(state[0]) {
+                value = inCombat.get();
+            } else {
+                value = outCombat.get();
+            }
+            action.accept(player, value);
+        }
+
+        @Override
+        public Duration applicationDelay() {
+            return Duration.ZERO;
+        }
+
+        @Override
+        public void apply(ServerPlayerEntity player, MobEntity target, boolean[] state) {}
     }
 
     static final record Extension<T extends Entity, S>(ActionTimeline<T, S> original,

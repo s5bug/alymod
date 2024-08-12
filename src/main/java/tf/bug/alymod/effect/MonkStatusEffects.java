@@ -3,6 +3,7 @@ package tf.bug.alymod.effect;
 import com.google.common.base.Suppliers;
 import java.util.function.Supplier;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.*;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.registry.Registries;
@@ -41,6 +42,8 @@ public final class MonkStatusEffects extends StatusEffect {
             new MonkStatusEffects(StatusEffectCategory.BENEFICIAL, 0xde4a31, "riddle_of_fire");
     public static final MonkStatusEffects RIDDLE_OF_WIND =
             new MonkStatusEffects(StatusEffectCategory.BENEFICIAL, 0x0022dd, "riddle_of_wind");
+    public static final MonkStatusEffects SPRINT =
+            new MonkStatusEffects(StatusEffectCategory.BENEFICIAL, 0x222222, "sprint");
     public static final MonkStatusEffects TWIN_SNAKES =
             new MonkStatusEffects(StatusEffectCategory.BENEFICIAL, 0xee88cc, "twin_snakes");
 
@@ -69,7 +72,90 @@ public final class MonkStatusEffects extends StatusEffect {
 
     @Override
     public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
-        return super.applyUpdateEffect(entity, amplifier);
+        if(this == DEMOLISH) {
+            long tickTime = entity.getEntityWorld().getTime();
+            // 60 ticks in 3 seconds
+            boolean shouldDotTick = (tickTime % 60L) == 0;
+
+            return true;
+        } else {
+            return super.applyUpdateEffect(entity, amplifier);
+        }
+    }
+
+    private static final Identifier FISTS_OF_WIND_EFFECT =
+            Identifier.of(Alymod.ID, "effect.fists_of_wind");
+
+    private static final EntityAttributeModifier FISTS_OF_WIND_ACTIVE =
+            new EntityAttributeModifier(
+                    FISTS_OF_WIND_EFFECT,
+                    0.1,
+                    EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+            );
+
+    private static final EntityAttributeModifier FISTS_OF_WIND_HIDDEN =
+            new EntityAttributeModifier(
+                    FISTS_OF_WIND_EFFECT,
+                    0.0,
+                    EntityAttributeModifier.Operation.ADD_VALUE
+            );
+
+    private static final Identifier SPRINT_EFFECT =
+            Identifier.of(Alymod.ID, "effect.sprint");
+
+    private static final EntityAttributeModifier SPRINT_ACTIVE =
+            new EntityAttributeModifier(
+                    SPRINT_EFFECT,
+                    0.3,
+                    EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+            );
+
+    @Override
+    public void onApplied(AttributeContainer attributeContainer, int amplifier) {
+        if(this == FISTS_OF_WIND) {
+            RegistryEntry<EntityAttribute> speed = EntityAttributes.GENERIC_MOVEMENT_SPEED;
+            EntityAttributeInstance speedInstance = attributeContainer.getCustomInstance(speed);
+            if(speedInstance == null) return;
+            boolean sprintActive = speedInstance.hasModifier(SPRINT_EFFECT);
+            EntityAttributeModifier mod = sprintActive ? FISTS_OF_WIND_HIDDEN : FISTS_OF_WIND_ACTIVE;
+            speedInstance.removeModifier(FISTS_OF_WIND_EFFECT);
+            speedInstance.addPersistentModifier(mod);
+        } else if(this == SPRINT) {
+            RegistryEntry<EntityAttribute> speed = EntityAttributes.GENERIC_MOVEMENT_SPEED;
+            EntityAttributeInstance speedInstance = attributeContainer.getCustomInstance(speed);
+            if(speedInstance == null) return;
+            boolean fistsOfWindActive = speedInstance.hasModifier(FISTS_OF_WIND_EFFECT);
+            if(fistsOfWindActive) {
+                speedInstance.removeModifier(FISTS_OF_WIND_EFFECT);
+                speedInstance.addPersistentModifier(FISTS_OF_WIND_HIDDEN);
+            }
+            speedInstance.removeModifier(SPRINT_EFFECT);
+            speedInstance.addPersistentModifier(SPRINT_ACTIVE);
+        } else {
+            return;
+        }
+    }
+
+    @Override
+    public void onRemoved(AttributeContainer attributeContainer) {
+        if(this == FISTS_OF_WIND) {
+            RegistryEntry<EntityAttribute> speed = EntityAttributes.GENERIC_MOVEMENT_SPEED;
+            EntityAttributeInstance speedInstance = attributeContainer.getCustomInstance(speed);
+            if(speedInstance == null) return;
+            speedInstance.removeModifier(FISTS_OF_WIND_EFFECT);
+        } else if(this == SPRINT) {
+            RegistryEntry<EntityAttribute> speed = EntityAttributes.GENERIC_MOVEMENT_SPEED;
+            EntityAttributeInstance speedInstance = attributeContainer.getCustomInstance(speed);
+            if(speedInstance == null) return;
+            speedInstance.removeModifier(SPRINT_EFFECT);
+            boolean fistsOfWindActive = speedInstance.hasModifier(FISTS_OF_WIND_EFFECT);
+            if(fistsOfWindActive) {
+                speedInstance.removeModifier(FISTS_OF_WIND_EFFECT);
+                speedInstance.addPersistentModifier(FISTS_OF_WIND_ACTIVE);
+            }
+        } else {
+            return;
+        }
     }
 
     public static void register() {
@@ -87,6 +173,7 @@ public final class MonkStatusEffects extends StatusEffect {
         RAPTOR_FORM.reference();
         RIDDLE_OF_FIRE.reference();
         RIDDLE_OF_WIND.reference();
+        SPRINT.reference();
         TWIN_SNAKES.reference();
     }
 

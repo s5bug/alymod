@@ -253,4 +253,11 @@ public final class StatusHelpers {
         StatusHelpers.syncGaugeState(pe);
     }
 
+    public static void giveSprint(PlayerEntity pe, int durationTicks) {
+        pe.addStatusEffect(new StatusEffectInstance(
+                MonkStatusEffects.SPRINT.reference(),
+                durationTicks
+        ), pe);
+    }
+
 }
