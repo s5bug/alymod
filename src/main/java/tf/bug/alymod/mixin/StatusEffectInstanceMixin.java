@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import tf.bug.alymod.CodecUtil;
 import tf.bug.alymod.effect.MonkStatusEffects;
 import tf.bug.alymod.imixin.IStatusEffectInstanceExtension;
 
@@ -45,51 +46,26 @@ public class StatusEffectInstanceMixin implements IStatusEffectInstanceExtension
         MapCodec.MapCodecCodec<StatusEffectInstance> mcc = (MapCodec.MapCodecCodec<StatusEffectInstance>) value;
         MapCodec<StatusEffectInstance> mc = mcc.codec();
 
-        MapCodec<StatusEffectInstance> next = mc.mapResult(new MapCodec.ResultFunction<>() {
-            @Override
-            public <T> DataResult<StatusEffectInstance> apply(DynamicOps<T> ops, MapLike<T> input, DataResult<StatusEffectInstance> a) {
-                return a.flatMap(x -> {
-                    if(x.getEffectType().matchesId(MonkStatusEffects.MEDITATIVE_BROTHERHOOD.id())) {
-                        T mbaEncoded = input.get(MEDITATIVE_BROTHERHOOD_APPLIERS_KEY);
-                        // TODO check if this is correct
-                        DataResult<Pair<UUID, T>> decoded = Uuids.CODEC.decode(ops, mbaEncoded);
-                        return decoded.map(p -> {
-                            // TODO not sure if I have to do a copy
-                            StatusEffectInstance copy = new StatusEffectInstance(x);
-                            IStatusEffectInstanceExtension next = (IStatusEffectInstanceExtension) copy;
-                            next.alymod$setMeditativeBrotherhoodApplier(p.getFirst());
-                            return copy;
-                        });
-                    } else if(x.getEffectType().matchesId(MonkStatusEffects.DEMOLISH.id())) {
-                        T demoEncoded = input.get(DEMOLISH_SNAPSHOTS_KEY);
-                        // TODO check if this is correct
-                        DataResult<Pair<DemolishSnapshot, T>> decoded = DemolishSnapshot.CODEC.decode(ops, demoEncoded);
-                        return decoded.map(p -> {
-                            // TODO not sure if I have to do a copy
-                            StatusEffectInstance copy = new StatusEffectInstance(x);
-                            IStatusEffectInstanceExtension next = (IStatusEffectInstanceExtension) copy;
-                            next.alymod$setDemolishSnapshot(p.getFirst());
-                            return copy;
-                        });
-                    } else return DataResult.success(x);
-                });
-            }
+        MapCodec<StatusEffectInstance> withMeditativeBrotherhood = CodecUtil.extend(
+                mc,
+                si -> si.getEffectType().matchesId(MonkStatusEffects.MEDITATIVE_BROTHERHOOD.id()),
+                MEDITATIVE_BROTHERHOOD_APPLIERS_KEY,
+                StatusEffectInstance::new,
+                Uuids.CODEC,
+                si -> ((IStatusEffectInstanceExtension) si).alymod$getMeditativeBrotherhoodApplier(),
+                (si, uuid) -> ((IStatusEffectInstanceExtension) si).alymod$setMeditativeBrotherhoodApplier(uuid)
+        );
+        MapCodec<StatusEffectInstance> withDemolish = CodecUtil.extend(
+                withMeditativeBrotherhood,
+                si -> si.getEffectType().matchesId(MonkStatusEffects.DEMOLISH.id()),
+                DEMOLISH_SNAPSHOTS_KEY,
+                StatusEffectInstance::new,
+                DemolishSnapshot.CODEC,
+                si -> ((IStatusEffectInstanceExtension) si).alymod$getDemolishSnapshot(),
+                (si, snapshot) -> ((IStatusEffectInstanceExtension) si).alymod$setDemolishSnapshot(snapshot)
+        );
 
-            @Override
-            public <T> RecordBuilder<T> coApply(DynamicOps<T> ops, StatusEffectInstance input, RecordBuilder<T> t) {
-                if(input.getEffectType().matchesId(MonkStatusEffects.MEDITATIVE_BROTHERHOOD.id())) {
-                    IStatusEffectInstanceExtension inputExt = (IStatusEffectInstanceExtension) input;
-                    UUID mba = inputExt.alymod$getMeditativeBrotherhoodApplier();
-                    return t.add(MEDITATIVE_BROTHERHOOD_APPLIERS_KEY, mba, Uuids.CODEC);
-                } else if(input.getEffectType().matchesId(MonkStatusEffects.DEMOLISH.id())) {
-                    IStatusEffectInstanceExtension inputExt = (IStatusEffectInstanceExtension) input;
-                    DemolishSnapshot demo = inputExt.alymod$getDemolishSnapshot();
-                    return t.add(DEMOLISH_SNAPSHOTS_KEY, demo, DemolishSnapshot.CODEC);
-                } else return t;
-            }
-        });
-
-        return next.codec();
+        return withDemolish.codec();
     }
 
     @ModifyExpressionValue(
@@ -100,39 +76,23 @@ public class StatusEffectInstanceMixin implements IStatusEffectInstanceExtension
             method = "<clinit>"
     )
     private static PacketCodec<RegistryByteBuf, StatusEffectInstance> addCustomFieldsPacketCodec(PacketCodec<RegistryByteBuf, StatusEffectInstance> original) {
-        return new PacketCodec<>() {
-            @Override
-            public StatusEffectInstance decode(RegistryByteBuf buf) {
-                StatusEffectInstance originalEffect = original.decode(buf);
-                if(originalEffect.getEffectType().matchesId(MonkStatusEffects.MEDITATIVE_BROTHERHOOD.id())) {
-                    StatusEffectInstance copy = new StatusEffectInstance(originalEffect);
-                    IStatusEffectInstanceExtension next = (IStatusEffectInstanceExtension) copy;
-                    UUID decoded = Uuids.PACKET_CODEC.decode(buf);
-                    next.alymod$setMeditativeBrotherhoodApplier(decoded);
-                    return copy;
-                } else if(originalEffect.getEffectType().matchesId(MonkStatusEffects.DEMOLISH.id())) {
-                    StatusEffectInstance copy = new StatusEffectInstance(originalEffect);
-                    IStatusEffectInstanceExtension next = (IStatusEffectInstanceExtension) copy;
-                    DemolishSnapshot decoded = DemolishSnapshot.PACKET_CODEC.decode(buf);
-                    next.alymod$setDemolishSnapshot(decoded);
-                    return copy;
-                } else return originalEffect;
-            }
-
-            @Override
-            public void encode(RegistryByteBuf buf, StatusEffectInstance value) {
-                original.encode(buf, value);
-                if(value.getEffectType().matchesId(MonkStatusEffects.MEDITATIVE_BROTHERHOOD.id())) {
-                    IStatusEffectInstanceExtension ext = (IStatusEffectInstanceExtension) value;
-                    Uuids.PACKET_CODEC.encode(buf, ext.alymod$getMeditativeBrotherhoodApplier());
-                } else if(value.getEffectType().matchesId(MonkStatusEffects.DEMOLISH.id())) {
-                    IStatusEffectInstanceExtension ext = (IStatusEffectInstanceExtension) value;
-                    DemolishSnapshot.PACKET_CODEC.encode(buf, ext.alymod$getDemolishSnapshot());
-                } else {
-                    return;
-                }
-            }
-        };
+        PacketCodec<RegistryByteBuf, StatusEffectInstance> withMeditativeBrotherhood = CodecUtil.extendPacket(
+                original,
+                si -> si.getEffectType().matchesId(MonkStatusEffects.MEDITATIVE_BROTHERHOOD.id()),
+                StatusEffectInstance::new,
+                Uuids.PACKET_CODEC,
+                si -> ((IStatusEffectInstanceExtension) si).alymod$getMeditativeBrotherhoodApplier(),
+                (si, uuid) -> ((IStatusEffectInstanceExtension) si).alymod$setMeditativeBrotherhoodApplier(uuid)
+        );
+        PacketCodec<RegistryByteBuf, StatusEffectInstance> withDemolish = CodecUtil.extendPacket(
+                withMeditativeBrotherhood,
+                si -> si.getEffectType().matchesId(MonkStatusEffects.DEMOLISH.id()),
+                StatusEffectInstance::new,
+                DemolishSnapshot.PACKET_CODEC,
+                si -> ((IStatusEffectInstanceExtension) si).alymod$getDemolishSnapshot(),
+                (si, snapshot) -> ((IStatusEffectInstanceExtension) si).alymod$setDemolishSnapshot(snapshot)
+        );
+        return withDemolish;
     }
 
     @Unique
