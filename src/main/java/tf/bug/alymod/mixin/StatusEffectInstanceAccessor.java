@@ -11,6 +11,9 @@ public interface StatusEffectInstanceAccessor {
     void setAmplifier(int amplifier);
 
     @Accessor
+    void setDuration(int duration);
+
+    @Accessor
     StatusEffectInstance getHiddenEffect();
 
     @Accessor

@@ -1,18 +1,28 @@
 package tf.bug.alymod.effect;
 
 import com.google.common.base.Suppliers;
+import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.objects.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.*;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Uuids;
 import tf.bug.alymod.Alymod;
+import tf.bug.alymod.monk.DemolishSnapshot;
+import tf.bug.alymod.monk.ExtendedStatusEffectInstance;
+import tf.bug.alymod.monk.ExtendedStatusEffectType;
 
 public final class MonkStatusEffects extends StatusEffect {
 
@@ -48,6 +58,142 @@ public final class MonkStatusEffects extends StatusEffect {
             new MonkStatusEffects(StatusEffectCategory.BENEFICIAL, 0x222222, "sprint");
     public static final MonkStatusEffects TWIN_SNAKES =
             new MonkStatusEffects(StatusEffectCategory.BENEFICIAL, 0xee88cc, "twin_snakes");
+
+    // Tested in the Chrysalis:
+    // - shorter True North overrides longer True North
+    // - shorter Whispering Dawn overrides longer Whispering Dawn
+    // - longer Lucid Dreaming nullifies shorter Lucid Dreaming??
+    // - longer Kerachole nullifies shorter Kerachole
+    // - shorter Physis II overrides longer Physis II
+    // - shorter Wheel of Fortune overrides longer Wheel of Fortune
+    // - longer Lightspeed nullifies shorter Lightspeed
+    // - shorter Opposition overrides longer Opposition
+    // - longer Exaltation nullifies shorter Exaltation
+    // - longer Formless Fist nullifies shorter Formless Fist
+    // - shorter The Balance overrides longer The Balance
+    private static void mergeDemolishSnapshots(
+            ExtendedStatusEffectInstance<Map<UUID, DemolishSnapshot>> into,
+            ExtendedStatusEffectInstance<Map<UUID, DemolishSnapshot>> from
+    ) {
+        into.getExtension().putAll(from.getExtension());
+        into.setAmplifier(into.getExtension().size() - 1);
+        int duration;
+        if(into.internalInstance().isInfinite() && from.internalInstance().isInfinite()) {
+            duration = StatusEffectInstance.INFINITE;
+        } else if(into.internalInstance().isInfinite()) {
+            duration = from.getDuration();
+        } else if(from.internalInstance().isInfinite()) {
+            duration = into.getDuration();
+        } else {
+            duration = Math.min(from.getDuration(), into.getDuration());
+        }
+        into.setDuration(duration);
+    }
+
+    private static boolean updateDemolishSnapshots(
+            LivingEntity on,
+            ExtendedStatusEffectInstance<Map<UUID, DemolishSnapshot>> demolish
+    ) {
+        boolean anyRemoved = false;
+        int minimumDuration = Integer.MAX_VALUE;
+
+        Iterator<Map.Entry<UUID, DemolishSnapshot>> entryIterator = demolish.getExtension().entrySet().iterator();
+        while (entryIterator.hasNext()) {
+            Map.Entry<UUID, DemolishSnapshot> demolishEntry = entryIterator.next();
+            DemolishSnapshot snapshot = demolishEntry.getValue();
+            if(snapshot.duration() != StatusEffectInstance.INFINITE) {
+                DemolishSnapshot next = snapshot.updateDuration();
+                if(next.duration() == 0) {
+                    entryIterator.remove();
+                    anyRemoved = true;
+                } else {
+                    demolishEntry.setValue(next);
+                    minimumDuration = Math.min(minimumDuration, next.duration());
+                }
+            }
+        }
+
+        if(anyRemoved) {
+            if(demolish.getExtension().isEmpty()) {
+                demolish.setDuration(0);
+            } else {
+                demolish.setAmplifier(demolish.getExtension().size() - 1);
+                demolish.setDuration(minimumDuration);
+            }
+        }
+        return anyRemoved;
+    }
+
+    private static void mergeMeditativeBrotherhood(
+            ExtendedStatusEffectInstance<Object2IntMap<UUID>> into,
+            ExtendedStatusEffectInstance<Object2IntMap<UUID>> from
+    ) {
+        into.getExtension().putAll(from.getExtension());
+        into.setAmplifier(into.getExtension().size() - 1);
+        int duration;
+        if(into.internalInstance().isInfinite() && from.internalInstance().isInfinite()) {
+            duration = StatusEffectInstance.INFINITE;
+        } else if(into.internalInstance().isInfinite()) {
+            duration = from.getDuration();
+        } else if(from.internalInstance().isInfinite()) {
+            duration = into.getDuration();
+        } else {
+            duration = Math.min(from.getDuration(), into.getDuration());
+        }
+        into.setDuration(duration);
+    }
+
+    private static boolean updateMeditativeBrotherhood(
+            LivingEntity on,
+            ExtendedStatusEffectInstance<Object2IntMap<UUID>> meditativeBrotherhood
+    ) {
+        if(on.getEntityWorld().isClient) return false;
+
+        boolean anyRemoved = false;
+        int minimumDuration = Integer.MAX_VALUE;
+
+        ObjectIterator<Object2IntMap.Entry<UUID>> entryIterator = meditativeBrotherhood.getExtension().object2IntEntrySet().iterator();
+        while (entryIterator.hasNext()) {
+            Object2IntMap.Entry<UUID> meditativeBrotherhoodEntry = entryIterator.next();
+            int duration = meditativeBrotherhoodEntry.getIntValue();
+            if(duration != StatusEffectInstance.INFINITE) {
+                int next = duration - 1;
+                if(next == 0) {
+                    entryIterator.remove();
+                    anyRemoved = true;
+                } else {
+                    meditativeBrotherhoodEntry.setValue(next);
+                    minimumDuration = Math.min(minimumDuration, next);
+                }
+            }
+        }
+
+        if(anyRemoved) {
+            if(meditativeBrotherhood.getExtension().isEmpty()) {
+                meditativeBrotherhood.setDuration(0);
+            } else {
+                meditativeBrotherhood.setAmplifier(meditativeBrotherhood.getExtension().size() - 1);
+                meditativeBrotherhood.setDuration(minimumDuration);
+            }
+        }
+        return anyRemoved;
+    }
+
+    public static final ExtendedStatusEffectType<Map<UUID, DemolishSnapshot>> DEMOLISH_EXTENSION =
+            new ExtendedStatusEffectType<>(
+                    Codec.unboundedMap(Uuids.CODEC, DemolishSnapshot.CODEC),
+                    PacketCodecs.map(HashMap::new, Uuids.PACKET_CODEC, DemolishSnapshot.PACKET_CODEC),
+                    MonkStatusEffects::mergeDemolishSnapshots,
+                    MonkStatusEffects::updateDemolishSnapshots
+            );
+
+    public static final ExtendedStatusEffectType<Object2IntMap<UUID>> MEDITATIVE_BROTHERHOOD_EXTENSION =
+            new ExtendedStatusEffectType<>(
+                    Codec.unboundedMap(Uuids.CODEC, Codec.INT).xmap(Object2IntOpenHashMap::new, Object2ObjectOpenHashMap::new),
+                    PacketCodecs.map(Object2IntOpenHashMap::new, Uuids.PACKET_CODEC, PacketCodecs.INTEGER),
+                    MonkStatusEffects::mergeMeditativeBrotherhood,
+                    MonkStatusEffects::updateMeditativeBrotherhood
+            );
 
     private final Identifier id;
 
@@ -177,6 +323,9 @@ public final class MonkStatusEffects extends StatusEffect {
         RIDDLE_OF_WIND.reference();
         SPRINT.reference();
         TWIN_SNAKES.reference();
+
+        Registry.register(ExtendedStatusEffectType.REGISTRY, DEMOLISH.id(), DEMOLISH_EXTENSION);
+        Registry.register(ExtendedStatusEffectType.REGISTRY, MEDITATIVE_BROTHERHOOD.id(), MEDITATIVE_BROTHERHOOD_EXTENSION);
     }
 
 }
