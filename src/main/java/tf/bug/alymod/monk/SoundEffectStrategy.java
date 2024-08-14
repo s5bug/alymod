@@ -30,8 +30,11 @@ public interface SoundEffectStrategy {
             @Override
             public void clientOnSnapshotSelf(ClientPlayerEntity cpe) {
                 if(this.castVolume <= 0.0f) return;
-                cpe.playSound(
+                cpe.clientWorld.playSoundFromEntity(
+                        cpe,
+                        cpe,
                         this.castEvent,
+                        SoundCategory.PLAYERS,
                         this.castVolume,
                         1.0f
                 );
@@ -41,11 +44,9 @@ public interface SoundEffectStrategy {
             @Override
             public void clientOnSnapshotTarget(ClientPlayerEntity cpe, Entity target) {
                 if(this.targetVolume <= 0.0f) return;
-                cpe.clientWorld.playSound(
+                cpe.clientWorld.playSoundFromEntity(
                         cpe,
-                        target.getX(),
-                        target.getY(),
-                        target.getZ(),
+                        target,
                         this.targetEvent,
                         SoundCategory.PLAYERS,
                         this.targetVolume,

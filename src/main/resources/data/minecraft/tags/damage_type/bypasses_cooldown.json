@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "alymod:striking"
+    "alymod:striking",
+    "alymod:demolish"
   ]
 }

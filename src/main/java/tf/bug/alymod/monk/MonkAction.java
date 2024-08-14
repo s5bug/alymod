@@ -139,10 +139,7 @@ public enum MonkAction {
                     Duration.ofMillis(1600L),
                     (p, e) -> false,
                     (p, e) -> false,
-                    (p, e) -> () -> new StatusEffectInstance(
-                            MonkStatusEffects.DEMOLISH.reference(),
-                            18 * 20
-                    )
+                    (p, e) -> StatusHelpers.supplyDemolish(p, e, MonkStats.Lv70.INSTANCE)
             ).withCast((player, state) -> {
                 if(!state.damage.isEmpty()) {
                     StatusHelpers.giveOpoOpoForm(player);

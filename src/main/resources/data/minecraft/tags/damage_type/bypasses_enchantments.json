@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "alymod:burst_into_light"
+    "alymod:burst_into_light",
+    "alymod:demolish"
   ]
 }

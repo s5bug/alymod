@@ -2,9 +2,13 @@ package tf.bug.alymod.monk;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -168,6 +172,37 @@ public final class StatusHelpers {
                 MonkStatusEffects.TWIN_SNAKES.reference(),
                 15 * 20
         ), pe);
+    }
+
+    public static Supplier<StatusEffectInstance> supplyDemolish(
+            PlayerEntity source,
+            LivingEntity target,
+            MonkStats stats
+    ) {
+        // 50 potency DoT
+        final int d1 = (int) Math.floor(50 * stats.getMultiplierAttackPower() * stats.getMultiplierDetermination());
+        final int d2 = 1 + (int) Math.floor((d1 * stats.getMultiplierSkillSpeed() * stats.getMultiplierWeaponDamage()) / 100.0d);
+
+        final DemolishSnapshot snapshot = new DemolishSnapshot(
+                18 * 20,
+                d2,
+                ActionTimeline.getBuffDamageBonus(source) * ActionTimeline.getDebuffDamageBonus(target),
+                stats.getProbabilityCriticalHit(),
+                stats.getMultiplierCrit(),
+                stats.getProbabilityDirectHit()
+        );
+
+        return () -> {
+            StatusEffectInstance base = new StatusEffectInstance(
+                    MonkStatusEffects.DEMOLISH.reference(),
+                    18 * 20
+            );
+            ExtendedStatusEffectInstance<Map<UUID, DemolishSnapshot>> extended =
+                    new ExtendedStatusEffectInstance<>(base);
+            extended.setExtension(new HashMap<>());
+            extended.getExtension().put(source.getUuid(), snapshot);
+            return base;
+        };
     }
 
     public static boolean hasRiddleOfWind(PlayerEntity pe) {

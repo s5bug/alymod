@@ -30,6 +30,9 @@ import tf.bug.alymod.monk.MonkAction;
 import tf.bug.alymod.monk.StatusHelpers;
 
 public class MonkSoul extends Item {
+
+    public static final float DAMAGE_SCALING = 100.0F;
+
     private MonkSoul(Settings settings) {
         super(settings);
     }

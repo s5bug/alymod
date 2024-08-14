@@ -3,10 +3,7 @@ package tf.bug.alymod.monk;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -18,6 +15,7 @@ import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.Nullable;
 import tf.bug.alymod.damage.StrikingDamage;
 import tf.bug.alymod.effect.MonkStatusEffects;
+import tf.bug.alymod.item.MonkSoul;
 
 public interface ActionTimeline<T extends Entity, S> {
 
@@ -90,7 +88,7 @@ public interface ActionTimeline<T extends Entity, S> {
                                           Duration applicationDelay,
                                           BiPredicate<ServerPlayerEntity, Entity> guaranteedCrit,
                                           BiPredicate<ServerPlayerEntity, Entity> guaranteedDhit,
-                                          BiFunction<ServerPlayerEntity, Entity, @Nullable Supplier<StatusEffectInstance>> debuff) implements ActionTimeline<Entity, FlatDamage.State> {
+                                          BiFunction<ServerPlayerEntity, LivingEntity, @Nullable Supplier<StatusEffectInstance>> debuff) implements ActionTimeline<Entity, FlatDamage.State> {
         public FlatDamage(ToIntBiFunction<ServerPlayerEntity, Entity> potency, Duration applicationDelay) {
             this(potency, applicationDelay, (p, e) -> false);
         }
@@ -110,6 +108,7 @@ public interface ActionTimeline<T extends Entity, S> {
             public boolean givenChakra = false;
             public final Object2IntMap<Entity> damage = new Object2IntOpenHashMap<>();
             public final Set<Entity> crits = new HashSet<>();
+            public final Map<Entity, Supplier<StatusEffectInstance>> debuffs = new HashMap<>();
         }
 
         @Override
@@ -131,6 +130,12 @@ public interface ActionTimeline<T extends Entity, S> {
 
             state.damage.put(target, damage);
             if(crit) state.crits.add(target);
+
+            if(this.debuff != null && target instanceof LivingEntity le) {
+                final Supplier<StatusEffectInstance> statusSupplier =
+                        this.debuff.apply(player, le);
+                if (statusSupplier != null) state.debuffs.put(target, statusSupplier);
+            }
         }
 
         @Override
@@ -144,8 +149,13 @@ public interface ActionTimeline<T extends Entity, S> {
             int damage = state.damage.getInt(target);
             target.damage(
                     player.getServerWorld().getDamageSources().create(StrikingDamage.KEY, player),
-                    damage / 50.0F
+                    damage / MonkSoul.DAMAGE_SCALING
             );
+
+            Supplier<StatusEffectInstance> statusSupplier = state.debuffs.get(target);
+            if(statusSupplier != null && target instanceof LivingEntity le) {
+                le.addStatusEffect(statusSupplier.get(), player);
+            }
         }
     }
 

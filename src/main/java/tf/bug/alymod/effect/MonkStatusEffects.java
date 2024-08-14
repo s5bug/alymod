@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.*;
@@ -19,7 +20,10 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Uuids;
+import net.minecraft.util.math.random.Random;
 import tf.bug.alymod.Alymod;
+import tf.bug.alymod.damage.DemolishDamage;
+import tf.bug.alymod.item.MonkSoul;
 import tf.bug.alymod.monk.DemolishSnapshot;
 import tf.bug.alymod.monk.ExtendedStatusEffectInstance;
 import tf.bug.alymod.monk.ExtendedStatusEffectType;
@@ -183,7 +187,8 @@ public final class MonkStatusEffects extends StatusEffect {
 
     public static final ExtendedStatusEffectType<Map<UUID, DemolishSnapshot>> DEMOLISH_EXTENSION =
             new ExtendedStatusEffectType<>(
-                    Codec.unboundedMap(Uuids.CODEC, DemolishSnapshot.CODEC),
+                    // new HashMap so that it's mutable
+                    Codec.unboundedMap(Uuids.CODEC, DemolishSnapshot.CODEC).xmap(HashMap::new, Function.identity()),
                     PacketCodecs.map(HashMap::new, Uuids.PACKET_CODEC, DemolishSnapshot.PACKET_CODEC),
                     MonkStatusEffects::mergeDemolishSnapshots,
                     MonkStatusEffects::updateDemolishSnapshots
@@ -222,10 +227,36 @@ public final class MonkStatusEffects extends StatusEffect {
 
     @Override
     public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
-        if(this == DEMOLISH) {
+        if(this == DEMOLISH && !entity.getEntityWorld().isClient) {
+            ExtendedStatusEffectInstance<Map<UUID, DemolishSnapshot>> thisx =
+                    new ExtendedStatusEffectInstance<>(entity.getStatusEffect(this.reference()));
             long tickTime = entity.getEntityWorld().getTime();
             // 60 ticks in 3 seconds
             boolean shouldDotTick = (tickTime % 60L) == 0;
+
+            if(shouldDotTick) {
+                Random r = entity.getRandom();
+
+                int totalDamage = 0;
+                for(DemolishSnapshot snapshot : thisx.getExtension().values()) {
+                    double variance = 0.95d + (0.1d * r.nextDouble());
+                    int d3 = (int) Math.floor(snapshot.d2() * variance);
+
+                    boolean criticalHit = r.nextDouble() < snapshot.critChance();
+                    boolean directHit = r.nextDouble() < snapshot.dhitChance();
+
+                    double critBuff = criticalHit ? snapshot.critMul() : 1.0;
+                    double dhBuff = directHit ? 1.25 : 1.0;
+
+                    int d4 = (int) Math.floor(d3 * critBuff * dhBuff * snapshot.buffSnapshot());
+                    totalDamage += d4;
+                }
+
+                if(totalDamage > 0) entity.damage(
+                        entity.getEntityWorld().getDamageSources().create(DemolishDamage.KEY),
+                        totalDamage / MonkSoul.DAMAGE_SCALING
+                );
+            }
 
             return true;
         } else {
