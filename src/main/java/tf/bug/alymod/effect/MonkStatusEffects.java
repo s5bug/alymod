@@ -59,18 +59,6 @@ public final class MonkStatusEffects extends StatusEffect {
     public static final MonkStatusEffects TWIN_SNAKES =
             new MonkStatusEffects(StatusEffectCategory.BENEFICIAL, 0xee88cc, "twin_snakes");
 
-    // Tested in the Chrysalis:
-    // - shorter True North overrides longer True North
-    // - shorter Whispering Dawn overrides longer Whispering Dawn
-    // - longer Lucid Dreaming nullifies shorter Lucid Dreaming??
-    // - longer Kerachole nullifies shorter Kerachole
-    // - shorter Physis II overrides longer Physis II
-    // - shorter Wheel of Fortune overrides longer Wheel of Fortune
-    // - longer Lightspeed nullifies shorter Lightspeed
-    // - shorter Opposition overrides longer Opposition
-    // - longer Exaltation nullifies shorter Exaltation
-    // - longer Formless Fist nullifies shorter Formless Fist
-    // - shorter The Balance overrides longer The Balance
     private static void mergeDemolishSnapshots(
             ExtendedStatusEffectInstance<Map<UUID, DemolishSnapshot>> into,
             ExtendedStatusEffectInstance<Map<UUID, DemolishSnapshot>> from
@@ -124,6 +112,20 @@ public final class MonkStatusEffects extends StatusEffect {
         return anyRemoved;
     }
 
+    // Tested in the Chrysalis:
+    // - shorter True North overrides longer True North
+    // - shorter Whispering Dawn overrides longer Whispering Dawn
+    // - longer Lucid Dreaming nullifies shorter Lucid Dreaming??
+    // - longer Kerachole nullifies shorter Kerachole
+    // - shorter Physis II overrides longer Physis II
+    // - shorter Wheel of Fortune overrides longer Wheel of Fortune
+    // - longer Lightspeed nullifies shorter Lightspeed
+    // - shorter Opposition overrides longer Opposition
+    // - longer Exaltation nullifies shorter Exaltation
+    // - longer Formless Fist nullifies shorter Formless Fist
+    // - shorter The Balance overrides longer The Balance
+    // For now we will assume the newest Meditative takes precedence, rather than the longest, since it is impossible
+    // to test in the current patch of FFXIV
     private static void mergeMeditativeBrotherhood(
             ExtendedStatusEffectInstance<Object2IntMap<UUID>> into,
             ExtendedStatusEffectInstance<Object2IntMap<UUID>> from

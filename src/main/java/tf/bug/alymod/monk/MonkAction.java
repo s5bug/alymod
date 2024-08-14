@@ -1,7 +1,11 @@
 package tf.bug.alymod.monk;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.fabricmc.api.EnvType;
@@ -13,6 +17,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import tf.bug.alymod.Alymod;
@@ -22,6 +27,7 @@ import tf.bug.alymod.network.MonkActionUsePayload;
 public enum MonkAction {
     BOOTSHINE(
             CooldownGroup.GCD,
+            ActionType.WEAPONSKILL,
             new TargetStrategy.Single(3),
             new ActionTimeline.FlatDamage(
                     (p, e) -> 140,
@@ -36,6 +42,7 @@ public enum MonkAction {
     ),
     TRUE_STRIKE(
             CooldownGroup.GCD,
+            ActionType.WEAPONSKILL,
             StatusHelpers::hasRaptorBonus,
             StatusHelpers::isRaptorForm,
             new TargetStrategy.Single(3),
@@ -51,6 +58,7 @@ public enum MonkAction {
     ),
     SNAP_PUNCH(
             CooldownGroup.GCD,
+            ActionType.WEAPONSKILL,
             StatusHelpers::hasCoeurlBonus,
             StatusHelpers::isCoeurlForm,
             new TargetStrategy.Single(3),
@@ -69,6 +77,7 @@ public enum MonkAction {
     ),
     INTERNAL_RELEASE(
             CooldownGroup.INTERNAL_RELEASE,
+            ActionType.ABILITY,
             new TargetStrategy.Self(),
             new ActionTimeline.DelayedAction<>(
                     Duration.ofMillis(700L),
@@ -80,6 +89,7 @@ public enum MonkAction {
     ),
     FISTS_OF_EARTH(
             CooldownGroup.FISTS,
+            ActionType.ABILITY,
             new TargetStrategy.Self(),
             new ActionTimeline.Action<>(
                     (p, e) -> StatusHelpers.toggleFistsOfEarth(e)
@@ -90,6 +100,7 @@ public enum MonkAction {
     ),
     TWIN_SNAKES(
             CooldownGroup.GCD,
+            ActionType.WEAPONSKILL,
             StatusHelpers::hasRaptorBonus,
             StatusHelpers::isRaptorForm,
             new TargetStrategy.Single(3),
@@ -105,6 +116,7 @@ public enum MonkAction {
     ),
     ARM_OF_THE_DESTROYER(
             CooldownGroup.GCD,
+            ActionType.WEAPONSKILL,
             new TargetStrategy.Spherical(5),
             new ActionTimeline.FlatDamage(
                     (p, e) -> 50,
@@ -118,6 +130,7 @@ public enum MonkAction {
     ),
     DEMOLISH(
             CooldownGroup.GCD,
+            ActionType.WEAPONSKILL,
             StatusHelpers::hasCoeurlBonus,
             StatusHelpers::isCoeurlForm,
             new TargetStrategy.Single(3),
@@ -142,6 +155,7 @@ public enum MonkAction {
     ),
     ROCKBREAKER(
             CooldownGroup.GCD,
+            ActionType.WEAPONSKILL,
             StatusHelpers::hasCoeurlBonus,
             StatusHelpers::isCoeurlForm,
             new TargetStrategy.Conal(5, Math.PI / 4.0D),
@@ -160,6 +174,7 @@ public enum MonkAction {
     ),
     FISTS_OF_WIND(
             CooldownGroup.FISTS,
+            ActionType.ABILITY,
             new TargetStrategy.Self(),
             new ActionTimeline.Action<>(
                     (p, e) -> StatusHelpers.toggleFistsOfWind(e)
@@ -171,6 +186,7 @@ public enum MonkAction {
     SHOULDER_TACKLE(
             MonkAction::shoulderTackleReplacements,
             CooldownGroup.TACKLES,
+            ActionType.ABILITY,
             p -> !StatusHelpers.isFistsOfEarth(p) && !StatusHelpers.isFistsOfWind(p) && !StatusHelpers.isFistsOfFire(p),
             p -> false,
             new TargetStrategy.GapClose(20),
@@ -184,6 +200,7 @@ public enum MonkAction {
     ),
     STEEL_PEAK(
             CooldownGroup.STEEL_PEAK,
+            ActionType.ABILITY,
             new TargetStrategy.Single(3),
             new ActionTimeline.FlatDamage(
                     (p, e) -> 150,
@@ -195,6 +212,7 @@ public enum MonkAction {
     ),
     FISTS_OF_FIRE(
             CooldownGroup.FISTS,
+            ActionType.ABILITY,
             new TargetStrategy.Self(),
             new ActionTimeline.Action<>(
                     (p, e) -> StatusHelpers.toggleFistsOfFire(e)
@@ -205,6 +223,7 @@ public enum MonkAction {
     ),
     MANTRA(
             CooldownGroup.MANTRA,
+            ActionType.ABILITY,
             new TargetStrategy.Spherical(7),
             new ActionTimeline.Action<>((p, e) -> {}), // TODO figure out something with scoreboard teams maybe?
             new CooldownStrategy.Ability(Duration.ofSeconds(90L)),
@@ -213,6 +232,7 @@ public enum MonkAction {
     ),
     ONE_ILM_PUNCH(
             CooldownGroup.GCD,
+            ActionType.WEAPONSKILL,
             StatusHelpers::hasRaptorBonus,
             StatusHelpers::isRaptorForm,
             new TargetStrategy.Single(3),
@@ -228,6 +248,7 @@ public enum MonkAction {
     ),
     HOWLING_FIST(
             CooldownGroup.HOWLING_FIST,
+            ActionType.ABILITY,
             new TargetStrategy.Line(10),
             new ActionTimeline.FlatDamage(
                     (p, e) -> 210,
@@ -239,6 +260,7 @@ public enum MonkAction {
     ),
     PERFECT_BALANCE(
             CooldownGroup.PERFECT_BALANCE,
+            ActionType.ABILITY,
             new TargetStrategy.Self(),
             new ActionTimeline.Action<>(
                     (p, e) -> StatusHelpers.givePerfectBalance(e)
@@ -249,6 +271,7 @@ public enum MonkAction {
     ),
     DRAGON_KICK(
             CooldownGroup.GCD,
+            ActionType.WEAPONSKILL,
             new TargetStrategy.Single(3),
             new ActionTimeline.FlatDamage(
                     (p, e) -> PositionalHelpers.isFlank(p, e) ? 140 : 100,
@@ -269,6 +292,7 @@ public enum MonkAction {
     ),
     FORM_SHIFT(
             CooldownGroup.GCD,
+            ActionType.WEAPONSKILL,
             new TargetStrategy.Self(),
             new ActionTimeline.Action<>((p, e) -> {
                 if(StatusHelpers.isOpoOpoForm(e)) {
@@ -286,6 +310,7 @@ public enum MonkAction {
     MEDITATION(
             MonkAction::meditationReplacement,
             CooldownGroup.GCD,
+            ActionType.ABILITY,
             p -> StatusHelpers.getChakra(p) < 5,
             p -> false,
             new TargetStrategy.Self(),
@@ -298,6 +323,7 @@ public enum MonkAction {
     ),
     THE_FORBIDDEN_CHAKRA(
             CooldownGroup.THE_FORBIDDEN_CHAKRA,
+            ActionType.ABILITY,
             p -> StatusHelpers.getChakra(p) >= 5,
             new TargetStrategy.Single(3),
             new ActionTimeline.FlatDamage(
@@ -310,6 +336,7 @@ public enum MonkAction {
     ),
     ELIXIR_FIELD(
             CooldownGroup.ELIXIR_FIELD,
+            ActionType.ABILITY,
             new TargetStrategy.Spherical(5),
             new ActionTimeline.FlatDamage(
                     (p, e) -> 220,
@@ -322,6 +349,7 @@ public enum MonkAction {
     // TODO Purification?
     TORNADO_KICK(
             CooldownGroup.TORNADO_KICK,
+            ActionType.ABILITY,
             p -> StatusHelpers.getGreasedLightning(p) >= 3,
             new TargetStrategy.Single(3),
             new ActionTimeline.FlatDamage(
@@ -334,6 +362,7 @@ public enum MonkAction {
     ),
     RIDDLE_OF_EARTH(
             CooldownGroup.RIDDLE_OF_EARTH,
+            ActionType.ABILITY,
             new TargetStrategy.Self(),
             new ActionTimeline.Action<>((p, e) -> {}), // TODO
             new CooldownStrategy.Ability(Duration.ofSeconds(60)),
@@ -342,6 +371,7 @@ public enum MonkAction {
     ),
     EARTH_TACKLE(
             CooldownGroup.TACKLES,
+            ActionType.ABILITY,
             StatusHelpers::isFistsOfEarth,
             new TargetStrategy.GapClose(10),
             new ActionTimeline.FlatDamage(
@@ -355,6 +385,7 @@ public enum MonkAction {
     WIND_TACKLE(
             MonkAction::windTackleReplacement,
             CooldownGroup.TACKLES,
+            ActionType.ABILITY,
             p -> StatusHelpers.isFistsOfWind(p) && !StatusHelpers.hasRiddleOfWind(p),
             p -> false,
             new TargetStrategy.GapClose(20),
@@ -368,6 +399,7 @@ public enum MonkAction {
     ),
     FIRE_TACKLE(
             CooldownGroup.TACKLES,
+            ActionType.ABILITY,
             StatusHelpers::isFistsOfFire,
             new TargetStrategy.GapClose(20),
             new ActionTimeline.FlatDamage(
@@ -380,6 +412,7 @@ public enum MonkAction {
     ),
     RIDDLE_OF_WIND(
             CooldownGroup.RIDDLE_OF_WIND,
+            ActionType.ABILITY,
             StatusHelpers::hasRiddleOfWind,
             StatusHelpers::hasRiddleOfWind,
             new TargetStrategy.GapClose(20),
@@ -396,6 +429,7 @@ public enum MonkAction {
     ),
     RIDDLE_OF_FIRE(
             CooldownGroup.RIDDLE_OF_FIRE,
+            ActionType.ABILITY,
             new TargetStrategy.Self(),
             new ActionTimeline.Action<>((p, e) -> StatusHelpers.giveRiddleOfFire(e)),
             new CooldownStrategy.Ability(Duration.ofSeconds(90L)),
@@ -404,6 +438,7 @@ public enum MonkAction {
     ),
     BROTHERHOOD(
             CooldownGroup.BROTHERHOOD,
+            ActionType.ABILITY,
             new TargetStrategy.Spherical(15).partyOnly().join(new TargetStrategy.Self()),
             new ActionTimeline.DelayedAction<>(
                     Duration.ofMillis(700L),
@@ -418,6 +453,7 @@ public enum MonkAction {
     ),
     SECOND_WIND(
             CooldownGroup.SECOND_WIND,
+            ActionType.ABILITY,
             new TargetStrategy.Self(),
             new ActionTimeline.Action<>((p, e) -> {}), // TODO
             new CooldownStrategy.Ability(Duration.ofSeconds(120L)),
@@ -426,6 +462,7 @@ public enum MonkAction {
     ),
     SPRINT(
             CooldownGroup.SPRINT,
+            ActionType.ABILITY,
             new TargetStrategy.Aggressors(),
             new ActionTimeline.CombatDifferenceAction<>(
                     () -> 10 * 20,
@@ -440,6 +477,7 @@ public enum MonkAction {
 
     private final Function<PlayerEntity, @Nullable MonkAction> replacement;
     private final CooldownGroup cooldownGroup;
+    private final ActionType actionType;
     private final Predicate<PlayerEntity> enabled;
     private final Predicate<PlayerEntity> highlighted;
     private final TargetTimelineChoreo<? extends Entity, ?> choreo;
@@ -453,6 +491,7 @@ public enum MonkAction {
     <T extends Entity, S> MonkAction(
             Function<PlayerEntity, @Nullable MonkAction> replacement,
             CooldownGroup cooldownGroup,
+            ActionType actionType,
             Predicate<PlayerEntity> enabled,
             Predicate<PlayerEntity> highlighted,
             TargetStrategy<T> targetStrategy,
@@ -463,6 +502,7 @@ public enum MonkAction {
     ) {
         this.replacement = replacement;
         this.cooldownGroup = cooldownGroup;
+        this.actionType = actionType;
         this.enabled = enabled;
         this.highlighted = highlighted;
         this.choreo = new TargetTimelineChoreo<>(targetStrategy, actionTimeline);
@@ -475,6 +515,7 @@ public enum MonkAction {
 
     <T extends Entity, S> MonkAction(
             CooldownGroup cooldownGroup,
+            ActionType actionType,
             Predicate<PlayerEntity> enabled,
             Predicate<PlayerEntity> highlighted,
             TargetStrategy<T> targetStrategy,
@@ -483,7 +524,7 @@ public enum MonkAction {
             SoundEffectStrategy soundEffectStrategy,
             String id
     ) {
-        this(p -> null, cooldownGroup,
+        this(p -> null, cooldownGroup, actionType,
                 enabled, highlighted,
                 targetStrategy, actionTimeline, cooldownStrategy,
                 soundEffectStrategy, id);
@@ -491,6 +532,7 @@ public enum MonkAction {
 
     <T extends Entity, S> MonkAction(
             CooldownGroup cooldownGroup,
+            ActionType actionType,
             Predicate<PlayerEntity> enabled,
             TargetStrategy<T> targetStrategy,
             ActionTimeline<T, S> actionTimeline,
@@ -498,20 +540,21 @@ public enum MonkAction {
             SoundEffectStrategy soundEffectStrategy,
             String id
     ) {
-        this(cooldownGroup, enabled, p -> false,
+        this(cooldownGroup, actionType, enabled, p -> false,
                 targetStrategy, actionTimeline, cooldownStrategy,
                 soundEffectStrategy, id);
     }
 
     <T extends Entity, S> MonkAction(
             CooldownGroup cooldownGroup,
+            ActionType actionType,
             TargetStrategy<T> targetStrategy,
             ActionTimeline<T, S> actionTimeline,
             CooldownStrategy cooldownStrategy,
             SoundEffectStrategy soundEffectStrategy,
             String id
     ) {
-        this(cooldownGroup, p -> true,
+        this(cooldownGroup, actionType, p -> true,
                 targetStrategy, actionTimeline, cooldownStrategy,
                 soundEffectStrategy, id);
     }
@@ -572,6 +615,36 @@ public enum MonkAction {
 
     public void executeServer(ServerPlayerEntity player, List<Entity> targets) {
         this.choreo.executeServer(player, targets);
+
+        // In Stormblood, Meditative Brotherhood scaled based off of number of targets
+        // Due to lacking a time machine, it's impossible to know whether or not
+        // - a 0-hit AoE would count as 0 possible generations or 1
+        // - Form Shift would count as 0 possible generations or 1
+        // For the purposes of this sim, we will directly use the number of targets:
+        // - a 0-hit AoE will count as 0 possible generations
+        // - Form Shift will count as 1 possible generation
+        if(this.actionType == ActionType.WEAPONSKILL &&
+                player.hasStatusEffect(MonkStatusEffects.MEDITATIVE_BROTHERHOOD.reference())) {
+            ExtendedStatusEffectInstance<Object2IntMap<UUID>> bh =
+                    new ExtendedStatusEffectInstance<>(
+                            player.getStatusEffect(MonkStatusEffects.MEDITATIVE_BROTHERHOOD.reference())
+                    );
+            List<ServerPlayerEntity> grantChakraTo =
+                    bh.getExtension().keySet().stream()
+                            .mapMulti((UUID uuid, Consumer<ServerPlayerEntity> consumer) -> {
+                                Entity bhApplier = player.getServerWorld().getPlayerByUuid(uuid);
+                                if (bhApplier instanceof ServerPlayerEntity spe) consumer.accept(spe);
+                            }).toList();
+            Random random = player.getRandom();
+            for(Entity ignored : targets) {
+                for(ServerPlayerEntity spe : grantChakraTo) {
+                    // 30% chance
+                    if(random.nextDouble() < 0.3) {
+                        StatusHelpers.giveChakra(spe);
+                    }
+                }
+            }
+        }
 
         this.registeredSoundEffect.serverOnSnapshotSelf(player);
         for(Entity target : targets) {
